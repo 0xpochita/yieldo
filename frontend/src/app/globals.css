@@ -1,26 +1,92 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand: #1e40af;
+  --color-brand-hover: #1e3a8a;
+  --color-brand-soft: rgba(30, 64, 175, 0.18);
+  --color-canvas: #0d0e0f;
+  --color-surface-1: #131316;
+  --color-surface-2: #1b1b1f;
+  --color-surface-3: #222228;
+  --color-line: #2c2c31;
+  --color-line-strong: #3a3a41;
+  --color-ink: #ffffff;
+  --color-ink-muted: #9b9ba5;
+  --color-ink-faint: #6b6b75;
+  --color-positive: #40b66b;
+  --color-negative: #fa2b39;
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@utility bg-main {
+  background-color: #0d0e0f;
+}
+
+@utility bg-surface {
+  background-color: #131316;
+}
+
+@utility bg-surface-raised {
+  background-color: #1b1b1f;
+}
+
+@utility bg-surface-muted {
+  background-color: #222228;
+}
+
+@utility text-main {
+  color: #ffffff;
+}
+
+@utility text-muted {
+  color: #9b9ba5;
+}
+
+@utility text-faint {
+  color: #6b6b75;
+}
+
+@utility border-main {
+  border-color: #2c2c31;
+}
+
+@utility border-strong {
+  border-color: #3a3a41;
+}
+
+@utility text-brand {
+  color: #1e40af;
+}
+
+@utility bg-brand {
+  background-color: #1e40af;
+}
+
+@utility bg-brand-soft {
+  background-color: rgba(30, 64, 175, 0.18);
+}
+
+@utility hover-brand {
+  &:hover {
+    background-color: #1e3a8a;
   }
 }
 
+@utility ring-brand {
+  --tw-ring-color: #1e40af;
+}
+
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #0d0e0f;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11", "ss01", "ss03";
+}
+
+::selection {
+  background-color: rgba(30, 64, 175, 0.45);
+  color: #ffffff;
 }
