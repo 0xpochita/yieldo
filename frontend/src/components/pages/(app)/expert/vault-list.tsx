@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  AlertTriangle,
-  Check,
-  Clock,
-  Inbox,
-  ShieldCheck,
-  Zap,
-} from "lucide-react";
+  FiAlertTriangle,
+  FiCheck,
+  FiClock,
+  FiInbox,
+  FiZap,
+} from "react-icons/fi";
+import { HiOutlineShieldCheck } from "react-icons/hi2";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useEffect, useMemo, useRef } from "react";
@@ -169,7 +169,7 @@ function EmptyState() {
       transition={{ duration: 0.25 }}
       className="mt-3 flex flex-col items-center justify-center gap-2 rounded-2xl bg-surface-raised px-6 py-10 text-center"
     >
-      <Inbox className="h-6 w-6 text-muted" />
+      <FiInbox className="h-6 w-6 text-muted" />
       <p className="text-sm font-semibold text-main">No vaults available</p>
       <p className="max-w-xs text-xs text-muted">
         Try another token or chain — we couldn&apos;t find routes for this
@@ -189,7 +189,7 @@ function ErrorState({ message }: { message: string }) {
       transition={{ duration: 0.25 }}
       className="mt-3 flex flex-col items-center justify-center gap-2 rounded-2xl border border-[rgba(250,43,57,0.35)] bg-[rgba(250,43,57,0.08)] px-6 py-10 text-center"
     >
-      <AlertTriangle className="h-6 w-6 text-[var(--color-negative)]" />
+      <FiAlertTriangle className="h-6 w-6 text-[var(--color-negative)]" />
       <p className="text-sm font-semibold text-main">Something went wrong</p>
       <p className="max-w-xs text-xs text-muted">{message}</p>
     </motion.div>
@@ -325,7 +325,7 @@ export function VaultList() {
             animate={{ scale: showOnlyTransactional ? 1 : 0.85 }}
           >
             {showOnlyTransactional ? (
-              <Check className="h-2 w-2 text-white" />
+              <FiCheck className="h-2 w-2 text-white" />
             ) : null}
           </motion.span>
           One-click deposit only
@@ -445,13 +445,13 @@ export function VaultList() {
                           <div className="mt-1 flex flex-wrap items-center gap-1.5">
                             {timelockLabel ? (
                               <span className="inline-flex items-center gap-1 rounded-full bg-surface-muted px-1.5 py-0.5 text-[10px] font-medium text-muted">
-                                <Clock className="h-2.5 w-2.5" />
+                                <FiClock className="h-2.5 w-2.5" />
                                 {timelockLabel}
                               </span>
                             ) : null}
                             {vault.kyc ? (
                               <span className="inline-flex items-center gap-1 rounded-full bg-surface-muted px-1.5 py-0.5 text-[10px] font-medium text-muted">
-                                <ShieldCheck className="h-2.5 w-2.5" />
+                                <HiOutlineShieldCheck className="h-2.5 w-2.5" />
                                 KYC
                               </span>
                             ) : null}
@@ -499,7 +499,7 @@ export function VaultList() {
                             : "flex h-6 w-6 items-center justify-center rounded-full border border-main bg-surface text-transparent"
                         }
                       >
-                        <Check className="h-3.5 w-3.5" />
+                        <FiCheck className="h-3.5 w-3.5" />
                       </span>
                     </div>
                   </button>
@@ -517,7 +517,7 @@ export function VaultList() {
           disabled={depositDisabled}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white cursor-pointer transition-all duration-200 ease-in-out hover-brand active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <Zap className="h-4 w-4" />
+          <FiZap className="h-4 w-4" />
           {!hasValidAmount
             ? "Enter an amount to continue"
             : selectedVault && !selectedVault.isTransactional

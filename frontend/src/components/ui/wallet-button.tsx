@@ -1,7 +1,8 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { AlertTriangle, Wallet } from "lucide-react";
+import { FiAlertTriangle } from "react-icons/fi";
+import { HiOutlineWallet } from "react-icons/hi2";
 import { useWalletReady } from "@/lib/wallet-ready";
 
 type WalletButtonProps = {
@@ -27,7 +28,7 @@ export function WalletButton({ variant = "desktop" }: WalletButtonProps) {
         aria-busy="true"
         className={`${base} cursor-wait opacity-70`}
       >
-        <Wallet className={iconSize} />
+        <HiOutlineWallet className={iconSize} />
         Connect wallet
       </button>
     );
@@ -60,7 +61,7 @@ export function WalletButton({ variant = "desktop" }: WalletButtonProps) {
               aria-busy="true"
               className={`${base} cursor-wait opacity-70`}
             >
-              <Wallet className={iconSize} />
+              <HiOutlineWallet className={iconSize} />
               Connect wallet
             </button>
           );
@@ -69,7 +70,7 @@ export function WalletButton({ variant = "desktop" }: WalletButtonProps) {
         if (!connected) {
           return (
             <button type="button" onClick={openConnectModal} className={base}>
-              <Wallet className={iconSize} />
+              <HiOutlineWallet className={iconSize} />
               Connect wallet
             </button>
           );
@@ -78,7 +79,7 @@ export function WalletButton({ variant = "desktop" }: WalletButtonProps) {
         if (chain.unsupported) {
           return (
             <button type="button" onClick={openChainModal} className={base}>
-              <AlertTriangle className={iconSize} />
+              <FiAlertTriangle className={iconSize} />
               Wrong network
             </button>
           );
@@ -86,7 +87,7 @@ export function WalletButton({ variant = "desktop" }: WalletButtonProps) {
 
         return (
           <button type="button" onClick={openAccountModal} className={base}>
-            <Wallet className={iconSize} />
+            <HiOutlineWallet className={iconSize} />
             {account.displayName}
           </button>
         );

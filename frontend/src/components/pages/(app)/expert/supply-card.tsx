@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown } from "lucide-react";
+import { FiArrowDown } from "react-icons/fi";
 import { useEffect, useMemo } from "react";
 import { mockChains, mockTokens } from "@/data";
 import { useExpertStore, useMetaStore } from "@/stores";
@@ -124,7 +124,7 @@ export function SupplyCard() {
 
         <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border-4 border-[var(--color-surface-1)] bg-surface-muted">
-            <ArrowDown className="h-4 w-4 text-muted" />
+            <FiArrowDown className="h-4 w-4 text-muted" />
           </div>
         </div>
 

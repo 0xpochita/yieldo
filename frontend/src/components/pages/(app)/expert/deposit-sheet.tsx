@@ -7,16 +7,16 @@ import {
 } from "@wagmi/core";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import {
-  AlertTriangle,
-  ArrowDown,
-  ArrowLeftRight,
-  Check,
-  ExternalLink,
-  Loader2,
-  Shield,
-  X,
-  Zap,
-} from "lucide-react";
+  FiAlertTriangle,
+  FiArrowDown,
+  FiCheck,
+  FiExternalLink,
+  FiLoader,
+  FiShield,
+  FiX,
+  FiZap,
+} from "react-icons/fi";
+import { HiOutlineArrowsRightLeft } from "react-icons/hi2";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useEffect } from "react";
@@ -119,7 +119,7 @@ export function DepositSheet() {
 function LoadingState() {
   return (
     <div className="flex flex-col items-center justify-center gap-3 p-10">
-      <Loader2 className="h-6 w-6 animate-spin text-muted" />
+      <FiLoader className="h-6 w-6 animate-spin text-muted" />
       <p className="text-sm text-muted">Loading wallet…</p>
     </div>
   );
@@ -162,7 +162,7 @@ function SheetHeader({ onClose }: { onClose: () => void }) {
         aria-label="Close"
         className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-surface-raised text-muted transition-colors hover:bg-surface-muted hover:text-main"
       >
-        <X className="h-4 w-4" />
+        <FiX className="h-4 w-4" />
       </button>
     </div>
   );
@@ -182,7 +182,7 @@ function ConnectPrompt() {
   return (
     <div className="flex flex-col items-center gap-4 py-8 text-center">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-brand">
-        <Zap className="h-5 w-5" />
+        <FiZap className="h-5 w-5" />
       </div>
       <div>
         <p className="text-sm font-semibold text-main">Connect your wallet</p>
@@ -309,7 +309,7 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
   if (step === "quoting") {
     return (
       <div className="flex flex-col items-center gap-3 py-10">
-        <Loader2 className="h-6 w-6 animate-spin text-brand" />
+        <FiLoader className="h-6 w-6 animate-spin text-brand" />
         <p className="text-sm font-semibold text-main">
           Finding the best route on LI.FI…
         </p>
@@ -325,7 +325,7 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
   if (step === "error" && !quote) {
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-center">
-        <AlertTriangle className="h-6 w-6 text-[var(--color-negative)]" />
+        <FiAlertTriangle className="h-6 w-6 text-[var(--color-negative)]" />
         <p className="text-sm font-semibold text-main">
           Couldn&apos;t fetch a route
         </p>
@@ -350,7 +350,7 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
           transition={{ type: "spring", stiffness: 340, damping: 18 }}
           className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-soft"
         >
-          <Check className="h-7 w-7 text-brand" />
+          <FiCheck className="h-7 w-7 text-brand" />
         </motion.div>
         <div>
           <p className="text-base font-semibold text-main">Deposit submitted</p>
@@ -367,7 +367,7 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
             className="inline-flex items-center gap-1 text-xs font-semibold text-brand underline"
           >
             View on LI.FI Scan
-            <ExternalLink className="h-3 w-3" />
+            <FiExternalLink className="h-3 w-3" />
           </a>
         ) : null}
         <button
@@ -452,7 +452,7 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
 
         <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl border-4 border-[var(--color-surface-1)] bg-surface-muted">
-            <ArrowDown className="h-4 w-4 text-muted" />
+            <FiArrowDown className="h-4 w-4 text-muted" />
           </div>
         </div>
 
@@ -505,7 +505,7 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
 
       {isCrossChain ? (
         <div className="flex items-start gap-2 rounded-2xl border border-brand/30 bg-brand-soft px-4 py-3">
-          <ArrowLeftRight className="mt-0.5 h-4 w-4 text-brand" />
+          <HiOutlineArrowsRightLeft className="mt-0.5 h-4 w-4 text-brand" />
           <div>
             <p className="text-xs font-semibold text-brand">
               Cross-chain deposit
@@ -547,7 +547,7 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
       </div>
 
       <div className="flex items-center gap-2 rounded-xl bg-surface-raised/60 px-3 py-2 text-[11px] text-muted">
-        <Shield className="h-3 w-3 text-brand" />
+        <FiShield className="h-3 w-3 text-brand" />
         Non-custodial. Yieldo never holds your funds — your wallet signs every
         step.
       </div>
@@ -566,14 +566,14 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
       >
         {isWorking ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <FiLoader className="h-4 w-4 animate-spin" />
             {step === "approving"
               ? "Check your wallet to approve"
               : "Confirm in your wallet"}
           </>
         ) : (
           <>
-            <Zap className="h-4 w-4" />
+            <FiZap className="h-4 w-4" />
             Confirm deposit
           </>
         )}
@@ -641,7 +641,7 @@ function StepIndicator({
                     : "bg-surface-muted text-faint"
               }`}
             >
-              {isDone ? <Check className="h-3 w-3" /> : index + 1}
+              {isDone ? <FiCheck className="h-3 w-3" /> : index + 1}
             </div>
             <span
               className={`truncate text-[11px] font-medium ${

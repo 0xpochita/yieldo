@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { Menu, X } from "lucide-react";
+import { FiMenu, FiX } from "react-icons/fi";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -89,7 +89,7 @@ const Navbar1 = () => {
           onClick={toggleMenu}
           whileTap={{ scale: 0.9 }}
         >
-          <Menu className="h-6 w-6 text-white" />
+          <FiMenu className="h-6 w-6 text-white" />
         </motion.button>
       </div>
 
@@ -112,7 +112,7 @@ const Navbar1 = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <X className="h-6 w-6 text-white" />
+              <FiX className="h-6 w-6 text-white" />
             </motion.button>
             <div className="flex flex-col space-y-6">
               {NAV_LINKS.map((item, index) => (

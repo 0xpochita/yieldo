@@ -1,0 +1,223 @@
+"use client";
+
+import { HiOutlineSparkles } from "react-icons/hi2";
+import { AnimatePresence, motion } from "motion/react";
+import Image from "next/image";
+import Link from "next/link";
+import type { LifiChainMeta } from "@/lib/lifi-meta";
+import type { LifiPortfolioPosition } from "@/lib/lifi-portfolio";
+
+type PositionsSectionProps = {
+  positions: LifiPortfolioPosition[];
+  status: "idle" | "loading" | "ready" | "error";
+  networkFilter: number | "all";
+  chainsById: Record<number, LifiChainMeta>;
+};
+
+function formatUsd(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "$0.00";
+  if (value < 0.01) return "< $0.01";
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(2)}K`;
+  return `$${value.toFixed(2)}`;
+}
+
+function formatBalance(
+  raw: string,
+  decimals: number,
+  symbol: string,
+): string {
+  try {
+    const value = BigInt(raw);
+    const divisor = 10 ** decimals;
+    const amount = Number(value) / divisor;
+    if (!Number.isFinite(amount) || amount === 0) return `0 ${symbol}`;
+    if (amount < 0.0001) return `< 0.0001 ${symbol}`;
+    if (amount >= 1_000)
+      return `${amount.toLocaleString("en-US", { maximumFractionDigits: 2 })} ${symbol}`;
+    return `${amount.toFixed(4)} ${symbol}`;
+  } catch {
+    return `— ${symbol}`;
+  }
+}
+
+const SKELETON_ROWS = [0, 1, 2];
+
+export function PositionsSection({
+  positions,
+  status,
+  chainsById,
+}: PositionsSectionProps) {
+  const isLoading = status === "loading" || status === "idle";
+  const isEmpty = status === "ready" && positions.length === 0;
+
+  return (
+    <section className="rounded-3xl border border-main bg-surface p-5 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
+      <header className="flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-semibold tracking-tight text-main">
+            Earn positions
+          </h2>
+          <p className="text-xs text-muted">
+            Active vaults discovered via LI.FI Earn portfolio
+          </p>
+        </div>
+      </header>
+
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.ul
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="mt-4 flex flex-col gap-2"
+          >
+            {SKELETON_ROWS.map((index) => (
+              <SkeletonRow key={index} index={index} />
+            ))}
+          </motion.ul>
+        ) : isEmpty ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="mt-4 flex flex-col items-center gap-3 rounded-2xl bg-surface-raised px-6 py-10 text-center"
+          >
+            <HiOutlineSparkles className="h-6 w-6 text-brand" />
+            <div>
+              <p className="text-sm font-semibold text-main">
+                No active earn positions yet
+              </p>
+              <p className="mx-auto mt-1 max-w-sm text-xs text-muted">
+                Start earning by depositing into a vault on the Earn page. Your
+                positions will appear here automatically.
+              </p>
+            </div>
+            <Link
+              href="/expert"
+              className="rounded-full bg-brand px-4 py-2 text-xs font-semibold text-white cursor-pointer transition-colors hover-brand"
+            >
+              Discover vaults
+            </Link>
+          </motion.div>
+        ) : (
+          <motion.ul
+            key="list"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="mt-4 flex flex-col gap-2"
+          >
+            {positions.map((position, index) => {
+              const chain = chainsById[position.chainId];
+              const usd = Number.parseFloat(position.balanceUsd ?? "0");
+              return (
+                <motion.li
+                  key={`${position.chainId}-${position.protocolName}-${position.asset.address}`}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04, duration: 0.25 }}
+                  className="flex items-center justify-between gap-4 rounded-2xl bg-surface-raised px-4 py-4"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="relative h-10 w-10 flex-shrink-0">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand">
+                        {position.protocolName.charAt(0).toUpperCase()}
+                      </span>
+                      {chain?.logoURI ? (
+                        <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center overflow-hidden rounded-full border-2 border-[var(--color-surface-2)] bg-[var(--color-surface-2)]">
+                          <Image
+                            src={chain.logoURI}
+                            alt={chain.name}
+                            width={12}
+                            height={12}
+                            className="h-full w-full object-contain"
+                            unoptimized
+                          />
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex min-w-0 flex-col">
+                      <span className="truncate text-sm font-semibold text-main">
+                        {position.protocolName}
+                      </span>
+                      <span className="truncate text-[11px] text-muted">
+                        {position.asset.symbol} · {chain?.name ?? `Chain ${position.chainId}`}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end">
+                    <span className="text-sm font-semibold text-main">
+                      {formatUsd(usd)}
+                    </span>
+                    <span className="text-[11px] text-muted">
+                      {formatBalance(
+                        position.balanceNative,
+                        position.asset.decimals,
+                        position.asset.symbol,
+                      )}
+                    </span>
+                  </div>
+                </motion.li>
+              );
+            })}
+          </motion.ul>
+        )}
+      </AnimatePresence>
+    </section>
+  );
+}
+
+function SkeletonRow({ index }: { index: number }) {
+  return (
+    <motion.li
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.06 }}
+      className="flex items-center justify-between gap-4 rounded-2xl bg-surface-raised px-4 py-4"
+    >
+      <div className="flex items-center gap-3">
+        <motion.span
+          className="h-10 w-10 rounded-full bg-surface-muted"
+          animate={{ opacity: [0.5, 0.9, 0.5] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <div className="flex flex-col gap-1.5">
+          <motion.span
+            className="h-3 w-24 rounded-full bg-surface-muted"
+            animate={{ opacity: [0.5, 0.9, 0.5] }}
+            transition={{
+              duration: 1.6,
+              delay: 0.1,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <motion.span
+            className="h-2.5 w-36 rounded-full bg-surface-muted opacity-60"
+            animate={{ opacity: [0.4, 0.8, 0.4] }}
+            transition={{
+              duration: 1.6,
+              delay: 0.2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </div>
+      </div>
+      <motion.span
+        className="h-4 w-20 rounded-full bg-surface-muted"
+        animate={{ opacity: [0.5, 0.9, 0.5] }}
+        transition={{
+          duration: 1.6,
+          delay: 0.3,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+    </motion.li>
+  );
+}

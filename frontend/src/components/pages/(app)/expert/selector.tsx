@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { FiChevronDown } from "react-icons/fi";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -123,7 +123,7 @@ export function Selector({
           transition={{ type: "spring", stiffness: 400, damping: 26 }}
           className="flex"
         >
-          <ChevronDown className="h-4 w-4 text-muted" />
+          <FiChevronDown className="h-4 w-4 text-muted" />
         </motion.span>
       </motion.button>
 
