@@ -11,9 +11,53 @@ import { HiOutlineShieldCheck } from "react-icons/hi2";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useEffect, useMemo, useRef } from "react";
+import type { VaultRiskFilter } from "@/stores";
 import { useDepositStore, useExpertStore, useMetaStore } from "@/stores";
 import type { VaultRisk, VaultSortKey, VaultStrategy } from "@/types";
 import { IdleAggregatorCard } from "./idle-aggregator-card";
+
+const RISK_FILTERS: { key: VaultRiskFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "low", label: "Low" },
+  { key: "medium", label: "Medium" },
+  { key: "high", label: "High" },
+];
+
+function RiskFilterChips({
+  active,
+  counts,
+  onSelect,
+}: {
+  active: VaultRiskFilter;
+  counts: Record<VaultRisk, number>;
+  onSelect: (filter: VaultRiskFilter) => void;
+}) {
+  const total = counts.low + counts.medium + counts.high;
+  return (
+    <div className="flex items-center gap-1 rounded-full bg-surface-raised p-1">
+      {RISK_FILTERS.map((option) => {
+        const isActive = option.key === active;
+        const count =
+          option.key === "all" ? total : (counts[option.key as VaultRisk] ?? 0);
+        return (
+          <button
+            key={option.key}
+            type="button"
+            onClick={() => onSelect(option.key)}
+            className={
+              isActive
+                ? "flex items-center gap-1 rounded-full bg-surface-muted px-2.5 py-1 text-[10px] font-semibold text-main cursor-pointer transition-colors"
+                : "flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-medium text-muted cursor-pointer transition-colors hover:text-main"
+            }
+          >
+            {option.label}
+            <span className="text-[9px] text-faint">{count}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 const SORT_OPTIONS: { key: VaultSortKey; label: string }[] = [
   { key: "apy", label: "APY" },
@@ -209,10 +253,12 @@ export function VaultList() {
   const showOnlyTransactional = useExpertStore(
     (state) => state.showOnlyTransactional,
   );
+  const riskFilter = useExpertStore((state) => state.riskFilter);
   const setSortBy = useExpertStore((state) => state.setSortBy);
   const setShowOnlyTransactional = useExpertStore(
     (state) => state.setShowOnlyTransactional,
   );
+  const setRiskFilter = useExpertStore((state) => state.setRiskFilter);
   const selectVault = useExpertStore((state) => state.selectVault);
   const fetchVaults = useExpertStore((state) => state.fetchVaults);
   const openDepositSheet = useDepositStore((state) => state.openSheet);
@@ -246,8 +292,24 @@ export function VaultList() {
   }, [token, chain, amountIsValid, fetchVaults]);
 
   const filtered = useMemo(() => {
-    if (!showOnlyTransactional) return vaults;
-    return vaults.filter((vault) => vault.isTransactional);
+    const base = showOnlyTransactional
+      ? vaults.filter((vault) => vault.isTransactional)
+      : vaults;
+    if (riskFilter === "all") return base;
+    return base.filter((vault) => vault.risk === riskFilter);
+  }, [vaults, showOnlyTransactional, riskFilter]);
+
+  const riskCounts = useMemo(() => {
+    const base = showOnlyTransactional
+      ? vaults.filter((vault) => vault.isTransactional)
+      : vaults;
+    return base.reduce(
+      (acc, vault) => {
+        acc[vault.risk] = (acc[vault.risk] ?? 0) + 1;
+        return acc;
+      },
+      { low: 0, medium: 0, high: 0 } as Record<VaultRisk, number>,
+    );
   }, [vaults, showOnlyTransactional]);
 
   const sorted = useMemo(
@@ -328,30 +390,37 @@ export function VaultList() {
         </div>
       </header>
 
-      <div className="mt-2 flex items-center justify-between px-3">
-        <span className="flex items-center gap-1.5 text-xs text-muted">
-          {hasData ? (
-            <>
-              <span>
-                {sorted.length} route{sorted.length === 1 ? "" : "s"} via
-              </span>
-              <Image
-                src="/Assets/Images/Logo-Brand/logo_lifi_light.svg"
-                alt="LI.FI"
-                width={12}
-                height={12}
-                className="invert opacity-80"
-              />
-              <span className="font-semibold text-main">LI.FI Earn</span>
-            </>
-          ) : (
-            <span>Discovering vault routes</span>
-          )}
-        </span>
+      <div className="mt-2 flex flex-col gap-2 px-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="flex items-center gap-1.5 text-xs text-muted">
+            {hasData ? (
+              <>
+                <span>
+                  {sorted.length} route{sorted.length === 1 ? "" : "s"} via
+                </span>
+                <Image
+                  src="/Assets/Images/Logo-Brand/logo_lifi_light.svg"
+                  alt="LI.FI"
+                  width={12}
+                  height={12}
+                  className="invert opacity-80"
+                />
+                <span className="font-semibold text-main">LI.FI Earn</span>
+              </>
+            ) : (
+              <span>Discovering vault routes</span>
+            )}
+          </span>
+          <RiskFilterChips
+            active={riskFilter}
+            counts={riskCounts}
+            onSelect={setRiskFilter}
+          />
+        </div>
         <button
           type="button"
           onClick={() => setShowOnlyTransactional(!showOnlyTransactional)}
-          className="flex items-center gap-1.5 rounded-full bg-surface-raised px-3 py-1 text-[11px] font-semibold text-muted cursor-pointer transition-colors duration-200 hover:text-main"
+          className="flex items-center gap-1.5 self-start rounded-full bg-surface-raised px-3 py-1 text-[11px] font-semibold text-muted cursor-pointer transition-colors duration-200 hover:text-main"
         >
           <motion.span
             className={`flex h-3 w-3 items-center justify-center rounded-full ${showOnlyTransactional ? "bg-brand" : "bg-surface-muted"}`}

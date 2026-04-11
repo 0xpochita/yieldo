@@ -1,5 +1,6 @@
 "use client";
 
+import { FiArrowUpRight } from "react-icons/fi";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
@@ -7,6 +8,7 @@ import Link from "next/link";
 import type { LifiChainMeta } from "@/lib/lifi-meta";
 import type { LifiPortfolioPosition } from "@/lib/lifi-portfolio";
 import { resolveProtocol } from "@/lib/protocol-registry";
+import { useWithdrawStore } from "@/stores";
 
 type PositionsSectionProps = {
   positions: LifiPortfolioPosition[];
@@ -49,6 +51,7 @@ export function PositionsSection({
   status,
   chainsById,
 }: PositionsSectionProps) {
+  const openWithdrawSheet = useWithdrawStore((state) => state.openSheet);
   const isLoading = status === "loading" || status === "idle";
   const isEmpty = status === "ready" && positions.length === 0;
 
@@ -121,8 +124,12 @@ export function PositionsSection({
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.04, duration: 0.25 }}
-                  className="flex items-center justify-between gap-4 rounded-2xl bg-surface-raised px-4 py-4"
                 >
+                  <button
+                    type="button"
+                    onClick={() => openWithdrawSheet(position)}
+                    className="flex w-full items-center justify-between gap-4 rounded-2xl bg-surface-raised px-4 py-4 text-left cursor-pointer transition-colors hover:bg-surface-muted"
+                  >
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="relative h-10 w-10 shrink-0">
                       <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-brand-soft text-sm font-semibold text-brand">
@@ -161,18 +168,25 @@ export function PositionsSection({
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end">
-                    <span className="text-sm font-semibold text-main">
-                      {formatUsd(usd)}
-                    </span>
-                    <span className="text-[11px] text-muted">
-                      {formatBalance(
-                        position.balanceNative,
-                        position.asset.decimals,
-                        position.asset.symbol,
-                      )}
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-end">
+                      <span className="text-sm font-semibold text-main">
+                        {formatUsd(usd)}
+                      </span>
+                      <span className="text-[11px] text-muted">
+                        {formatBalance(
+                          position.balanceNative,
+                          position.asset.decimals,
+                          position.asset.symbol,
+                        )}
+                      </span>
+                    </div>
+                    <span className="flex h-7 items-center gap-1 rounded-full bg-brand-soft px-2.5 text-[10px] font-semibold text-brand">
+                      Withdraw
+                      <FiArrowUpRight className="h-3 w-3" />
                     </span>
                   </div>
+                  </button>
                 </motion.li>
               );
             })}

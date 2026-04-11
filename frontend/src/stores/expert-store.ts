@@ -14,6 +14,8 @@ import type {
 
 type FetchStatus = "idle" | "loading" | "success" | "error";
 
+export type VaultRiskFilter = VaultRisk | "all";
+
 type ExpertState = {
   token: Token;
   chain: Chain;
@@ -24,21 +26,35 @@ type ExpertState = {
   status: FetchStatus;
   error: string | null;
   showOnlyTransactional: boolean;
+  riskFilter: VaultRiskFilter;
   setToken: (token: Token) => void;
   setChain: (chain: Chain) => void;
   setAmount: (value: string) => void;
   setSortBy: (sortBy: VaultSortKey) => void;
   setShowOnlyTransactional: (value: boolean) => void;
+  setRiskFilter: (filter: VaultRiskFilter) => void;
   selectVault: (id: string) => void;
   fetchVaults: () => Promise<void>;
 };
 
 let currentController: AbortController | null = null;
 
-function inferRisk(apyPercent: number): VaultRisk {
-  if (!Number.isFinite(apyPercent)) return "medium";
-  if (apyPercent >= 15) return "high";
-  if (apyPercent >= 7) return "medium";
+function inferRisk(apyPercent: number, tvlUsd: number): VaultRisk {
+  if (!Number.isFinite(apyPercent) || apyPercent <= 0) return "medium";
+
+  const whaleTvl = tvlUsd >= 50_000_000;
+  const largeTvl = tvlUsd >= 5_000_000;
+  const smallTvl = tvlUsd < 1_000_000;
+
+  if (apyPercent >= 40) return "high";
+  if (apyPercent >= 20 && !whaleTvl) return "high";
+  if (smallTvl && apyPercent >= 10) return "high";
+
+  if (apyPercent >= 12) return "medium";
+  if (apyPercent >= 6 && !whaleTvl) return "medium";
+  if (smallTvl) return "medium";
+
+  if (largeTvl && apyPercent <= 10) return "low";
   return "low";
 }
 
@@ -59,9 +75,8 @@ function toNumber(value: unknown, fallback = 0): number {
 
 function mapVault(vault: LifiVault): VaultStrategy {
   const tvlUsd = toNumber(vault.analytics?.tvl?.usd, 0);
-  const apyDecimal = toNumber(vault.analytics?.apy?.total, 0);
-  const apyPercent = apyDecimal * 100;
-  const apy30dDecimal =
+  const apyPercent = toNumber(vault.analytics?.apy?.total, 0);
+  const apy30dPercent =
     vault.analytics?.apy30d === null || vault.analytics?.apy30d === undefined
       ? null
       : toNumber(vault.analytics.apy30d, 0);
@@ -84,9 +99,9 @@ function mapVault(vault: LifiVault): VaultStrategy {
     chainId: vault.chainId,
     chainShortName: resolveChainShortName(vault.chainId),
     apy: apyPercent,
-    apy30d: apy30dDecimal !== null ? apy30dDecimal * 100 : null,
+    apy30d: apy30dPercent,
     tvlUsd,
-    risk: inferRisk(apyPercent),
+    risk: inferRisk(apyPercent, tvlUsd),
     isTransactional: Boolean(vault.isTransactional),
     isRedeemable: Boolean(vault.isRedeemable),
     kyc: Boolean(vault.kyc),
@@ -105,12 +120,14 @@ export const useExpertStore = create<ExpertState>((set, get) => ({
   status: "idle",
   error: null,
   showOnlyTransactional: true,
+  riskFilter: "all",
   setToken: (token) => set({ token }),
   setChain: (chain) => set({ chain }),
   setAmount: (amount) => set({ amount }),
   setSortBy: (sortBy) => set({ sortBy }),
   setShowOnlyTransactional: (showOnlyTransactional) =>
     set({ showOnlyTransactional }),
+  setRiskFilter: (riskFilter) => set({ riskFilter }),
   selectVault: (selectedVaultId) => set({ selectedVaultId }),
   fetchVaults: async () => {
     const { token, chain } = get();
@@ -129,7 +146,8 @@ export const useExpertStore = create<ExpertState>((set, get) => ({
           chainId: chain.id,
           asset: token.symbol,
           sortBy: "apy",
-          limit: 50,
+          limit: 100,
+          minTvlUsd: 100_000,
         },
         controller.signal,
       );

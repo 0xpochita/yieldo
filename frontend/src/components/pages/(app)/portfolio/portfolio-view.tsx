@@ -11,12 +11,16 @@ import { PortfolioHeader } from "./portfolio-header";
 import { PositionsSection } from "./positions-section";
 import { TokensSection } from "./tokens-section";
 import { TotalSummary } from "./total-summary";
+import { WithdrawSheet } from "./withdraw-sheet";
 
 export function PortfolioView() {
   return (
-    <main className="relative mx-auto flex w-full max-w-[1160px] flex-1 flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14">
-      <PortfolioBody />
-    </main>
+    <>
+      <main className="relative mx-auto flex w-full max-w-[1160px] flex-1 flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14">
+        <PortfolioBody />
+      </main>
+      <WithdrawSheet />
+    </>
   );
 }
 
