@@ -1,10 +1,16 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 
+export type FeatureChain = {
+  name: string;
+  logo?: string;
+};
+
 export type FeatureCard = {
   id: string;
   protocol: string;
-  network: string;
+  chains: FeatureChain[];
+  extraChains?: number;
   aprRange: string;
   logo: string;
   tint: string;
@@ -66,8 +72,34 @@ export function FeatureSections({
                 <span className="truncate text-sm font-semibold text-main">
                   {card.protocol}
                 </span>
-                <span className="truncate text-[11px] text-muted">
-                  {card.network}
+                <span className="flex items-center gap-1 truncate text-[11px] text-muted">
+                  {card.chains.map((chain, index) => (
+                    <span
+                      key={chain.name}
+                      className="flex items-center gap-1"
+                    >
+                      {index > 0 ? (
+                        <span className="text-faint">·</span>
+                      ) : null}
+                      {chain.logo ? (
+                        <Image
+                          src={chain.logo}
+                          alt={chain.name}
+                          width={12}
+                          height={12}
+                          className="h-3 w-3 shrink-0 object-contain"
+                          unoptimized
+                        />
+                      ) : null}
+                      <span>{chain.name}</span>
+                    </span>
+                  ))}
+                  {card.extraChains && card.extraChains > 0 ? (
+                    <span className="flex items-center gap-1">
+                      <span className="text-faint">·</span>
+                      <span className="text-faint">+{card.extraChains}</span>
+                    </span>
+                  ) : null}
                 </span>
               </div>
             </div>

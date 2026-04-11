@@ -97,7 +97,7 @@ export function PositionsSection({
               </p>
             </div>
             <Link
-              href="/expert"
+              href="/earn"
               className="rounded-full bg-brand px-4 py-2 text-xs font-semibold text-white cursor-pointer transition-colors hover-brand"
             >
               Discover vaults

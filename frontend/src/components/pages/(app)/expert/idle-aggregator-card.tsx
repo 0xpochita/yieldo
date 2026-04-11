@@ -2,11 +2,17 @@ import Image from "next/image";
 import { FiArrowLeft } from "react-icons/fi";
 import { type FeatureCard, FeatureSections } from "@/components/ui";
 
+const CHAIN_LOGOS = {
+  ethereum: "/Assets/Images/Logo-Coin/eth-logo.svg",
+  arbitrum: "/Assets/Images/Logo-Coin/arb-logo.svg",
+  base: "/Assets/Images/Logo-Coin/logo-base.webp",
+} as const;
+
 const FEATURE_CARDS: FeatureCard[] = [
   {
     id: "yo-protocol",
     protocol: "Yo Protocol",
-    network: "Arbitrum",
+    chains: [{ name: "Arbitrum", logo: CHAIN_LOGOS.arbitrum }],
     aprRange: "4.0 – 18.0",
     logo: "/Assets/Images/Logo-DeFi/yo-protocol-logo.png",
     tint: "rgba(190, 244, 50, 0.08)",
@@ -14,7 +20,10 @@ const FEATURE_CARDS: FeatureCard[] = [
   {
     id: "morpho",
     protocol: "Morpho",
-    network: "Ethereum · Base",
+    chains: [
+      { name: "Ethereum", logo: CHAIN_LOGOS.ethereum },
+      { name: "Base", logo: CHAIN_LOGOS.base },
+    ],
     aprRange: "3.5 – 12.0",
     logo: "/Assets/Images/Logo-DeFi/morpho-logo.webp",
     tint: "rgba(59, 130, 246, 0.12)",
@@ -22,7 +31,7 @@ const FEATURE_CARDS: FeatureCard[] = [
   {
     id: "euler",
     protocol: "Euler Finance",
-    network: "Ethereum",
+    chains: [{ name: "Ethereum", logo: CHAIN_LOGOS.ethereum }],
     aprRange: "2.0 – 8.5",
     logo: "/Assets/Images/Logo-DeFi/euler-finance-logo.svg",
     tint: "rgba(55, 190, 193, 0.10)",
@@ -30,7 +39,8 @@ const FEATURE_CARDS: FeatureCard[] = [
   {
     id: "aave",
     protocol: "Aave",
-    network: "Ethereum · +6",
+    chains: [{ name: "Ethereum", logo: CHAIN_LOGOS.ethereum }],
+    extraChains: 6,
     aprRange: "2.5 – 7.0",
     logo: "/Assets/Images/Logo-DeFi/aave-logo.svg",
     tint: "rgba(147, 145, 247, 0.12)",

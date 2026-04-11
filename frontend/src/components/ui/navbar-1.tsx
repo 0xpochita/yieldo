@@ -9,7 +9,7 @@ import { useState } from "react";
 import { WalletButton } from "./wallet-button";
 
 const NAV_LINKS: { label: string; href: string }[] = [
-  { label: "Earn", href: "/expert" },
+  { label: "Earn", href: "/earn" },
   { label: "Portfolio", href: "/portfolio" },
 ];
 
@@ -23,7 +23,7 @@ const Navbar1 = () => {
     <div className="flex w-full justify-center px-4 py-6">
       <div className="relative z-10 flex w-full max-w-3xl items-center justify-between rounded-full border border-white/15 bg-white/10 px-6 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl backdrop-saturate-150 before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:bg-[linear-gradient(140deg,rgba(255,255,255,0.18),rgba(255,255,255,0.02)_55%,rgba(255,255,255,0.06))] before:content-['']">
         <div className="flex items-center">
-          <Link href="/expert" className="flex items-center gap-2 cursor-pointer">
+          <Link href="/earn" className="flex items-center gap-2 cursor-pointer">
             <motion.div
               className="relative h-9 w-9"
               initial={{ scale: 0.8 }}
