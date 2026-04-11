@@ -4,6 +4,7 @@ import {
   FiAlertTriangle,
   FiCheck,
   FiClock,
+  FiExternalLink,
   FiInbox,
   FiZap,
 } from "react-icons/fi";
@@ -88,6 +89,21 @@ function formatTvl(value: number): string {
 function formatApy(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return `${value.toFixed(2)}%`;
+}
+
+const BLOCK_EXPLORERS: Record<number, string> = {
+  1: "https://etherscan.io/address",
+  10: "https://optimistic.etherscan.io/address",
+  137: "https://polygonscan.com/address",
+  8453: "https://basescan.org/address",
+  42161: "https://arbiscan.io/address",
+};
+
+function resolveVaultLink(vault: VaultStrategy): string | null {
+  if (vault.protocolUrl) return vault.protocolUrl;
+  const explorer = BLOCK_EXPLORERS[vault.chainId];
+  if (!explorer) return null;
+  return `${explorer}/${vault.vaultAddress}`;
 }
 
 function formatTimelock(seconds: number): string {
@@ -484,9 +500,16 @@ export function VaultList() {
                     layout: { type: "spring", stiffness: 380, damping: 32 },
                   }}
                 >
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => selectVault(vault.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        selectVault(vault.id);
+                      }
+                    }}
                     className={
                       isSelected
                         ? "flex w-full items-center justify-between gap-4 rounded-2xl border border-strong bg-surface-raised px-4 py-4 text-left cursor-pointer transition-all duration-200 ease-in-out"
@@ -527,6 +550,22 @@ export function VaultList() {
                           <span className="truncate text-sm font-semibold text-main">
                             {vault.protocol}
                           </span>
+                          {(() => {
+                            const link = resolveVaultLink(vault);
+                            if (!link) return null;
+                            return (
+                              <a
+                                href={link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={`Open ${vault.protocol} vault details`}
+                                onClick={(event) => event.stopPropagation()}
+                                className="flex text-faint transition-colors hover:text-main"
+                              >
+                                <FiExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            );
+                          })()}
                           {isBest ? (
                             <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-bold tracking-wide text-brand">
                               BEST
@@ -605,7 +644,7 @@ export function VaultList() {
                         <FiCheck className="h-3.5 w-3.5" />
                       </span>
                     </div>
-                  </button>
+                  </div>
                 </motion.li>
               );
             })}
