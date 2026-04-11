@@ -6,7 +6,6 @@ import {
   FiClock,
   FiExternalLink,
   FiInbox,
-  FiZap,
 } from "react-icons/fi";
 import { HiOutlineShieldCheck } from "react-icons/hi2";
 import { AnimatePresence, motion } from "motion/react";
@@ -661,7 +660,6 @@ export function VaultList() {
           disabled={depositDisabled}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white cursor-pointer transition-all duration-200 ease-in-out hover-brand active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <FiZap className="h-4 w-4" />
           {!hasValidAmount
             ? "Enter an amount to continue"
             : selectedVault && !selectedVault.isTransactional

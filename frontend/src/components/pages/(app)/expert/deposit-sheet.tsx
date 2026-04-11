@@ -12,7 +12,6 @@ import {
   FiCheck,
   FiExternalLink,
   FiLoader,
-  FiShield,
   FiX,
   FiZap,
 } from "react-icons/fi";
@@ -547,7 +546,13 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
       </div>
 
       <div className="flex items-center gap-2 rounded-xl bg-surface-raised/60 px-3 py-2 text-[11px] text-muted">
-        <FiShield className="h-3 w-3 text-brand" />
+        <Image
+          src="/Assets/Images/Logo-Brand/yieldo-transparent.png"
+          alt="Yieldo"
+          width={16}
+          height={16}
+          className="h-4 w-4 object-contain"
+        />
         Non-custodial. Yieldo never holds your funds — your wallet signs every
         step.
       </div>
@@ -573,16 +578,53 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
           </>
         ) : (
           <>
-            <FiZap className="h-4 w-4" />
             Confirm deposit
           </>
         )}
       </button>
 
-      <p className="text-center text-[10px] text-faint">
-        Powered by LI.FI · Routes discovered from {vault.protocol} on{" "}
-        {vault.chainShortName}
-      </p>
+      <div className="flex flex-wrap items-center justify-center gap-1.5 text-[10px] text-faint">
+        <span className="inline-flex items-center gap-1">
+          Powered by
+          <Image
+            src="/Assets/Images/Logo-Brand/logo_lifi_light.svg"
+            alt="LI.FI"
+            width={10}
+            height={10}
+            className="h-2.5 w-2.5 opacity-80 invert"
+          />
+          <span className="font-semibold text-muted">LI.FI</span>
+        </span>
+        <span>·</span>
+        <span className="inline-flex items-center gap-1">
+          Routes discovered from
+          {vault.protocolLogoUri ? (
+            <Image
+              src={vault.protocolLogoUri}
+              alt={vault.protocol}
+              width={12}
+              height={12}
+              className="h-3 w-3 rounded-full object-contain"
+              unoptimized
+            />
+          ) : null}
+          <span className="font-semibold text-muted">{vault.protocol}</span>
+          on
+          {toChainLogo ? (
+            <Image
+              src={toChainLogo}
+              alt={vault.chainShortName}
+              width={12}
+              height={12}
+              className="h-3 w-3 rounded-full object-contain"
+              unoptimized
+            />
+          ) : null}
+          <span className="font-semibold text-muted">
+            {vault.chainShortName}
+          </span>
+        </span>
+      </div>
     </div>
   );
 }
