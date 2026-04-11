@@ -364,7 +364,7 @@ export function VaultList() {
   }
 
   return (
-    <section className="rounded-3xl border border-main bg-surface p-3 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+    <section className="flex h-full min-h-0 flex-1 flex-col rounded-3xl border border-main bg-surface p-3 shadow-[0_16px_40px_rgba(0,0,0,0.35)] mb-10">
       <header className="flex items-center justify-between px-3 pt-2">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-brand-soft">
@@ -450,6 +450,7 @@ export function VaultList() {
         </button>
       </div>
 
+      <div className="flex min-h-0 flex-1 flex-col">
       <AnimatePresence mode="wait">
         {isLoading ? (
           <SkeletonList key="skeleton" />
@@ -467,7 +468,7 @@ export function VaultList() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="mt-3 flex max-h-[520px] flex-col gap-2 overflow-y-auto pr-1"
+            className="mt-3 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1"
           >
             {sorted.map((vault, index) => {
               const isSelected = vault.id === selectedVaultId;
@@ -512,8 +513,8 @@ export function VaultList() {
                     }}
                     className={
                       isSelected
-                        ? "flex w-full items-center justify-between gap-4 rounded-2xl border border-strong bg-surface-raised px-4 py-4 text-left cursor-pointer transition-all duration-200 ease-in-out"
-                        : "flex w-full items-center justify-between gap-4 rounded-2xl border border-transparent bg-surface-raised px-4 py-4 text-left cursor-pointer transition-all duration-200 ease-in-out hover:border-main hover:bg-surface-muted"
+                        ? "flex w-full items-center justify-between gap-4 rounded-2xl border border-strong bg-surface-raised px-4 py-3 text-left cursor-pointer transition-all duration-200 ease-in-out"
+                        : "flex w-full items-center justify-between gap-4 rounded-2xl border border-transparent bg-surface-raised px-4 py-3 text-left cursor-pointer transition-all duration-200 ease-in-out hover:border-main hover:bg-surface-muted"
                     }
                   >
                     <div className="flex min-w-0 items-center gap-3">
@@ -651,6 +652,7 @@ export function VaultList() {
           </motion.ul>
         ) : null}
       </AnimatePresence>
+      </div>
 
       <div className="mt-3 px-1 pb-1">
         <button

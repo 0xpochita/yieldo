@@ -34,7 +34,7 @@ export function FeatureSections({
   footer,
 }: FeatureSectionsProps) {
   return (
-    <section className="relative flex min-h-[560px] flex-col overflow-hidden rounded-3xl border border-main bg-surface p-6 shadow-[0_16px_40px_rgba(0,0,0,0.35)] sm:p-8">
+    <section className="relative flex flex-col overflow-hidden rounded-3xl border border-main bg-surface p-5 shadow-[0_16px_40px_rgba(0,0,0,0.35)] sm:p-6">
       <div className="flex flex-col gap-2">
         {eyebrow ? (
           <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">
@@ -42,7 +42,7 @@ export function FeatureSections({
             {eyebrow}
           </span>
         ) : null}
-        <h2 className="max-w-[22ch] text-2xl font-semibold leading-tight tracking-tight text-main sm:text-3xl">
+        <h2 className="max-w-[22ch] text-xl font-semibold leading-tight tracking-tight text-main sm:text-2xl">
           {title}
         </h2>
         {description ? (
@@ -50,11 +50,11 @@ export function FeatureSections({
         ) : null}
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
+      <div className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3">
         {cards.map((card) => (
           <div
             key={card.id}
-            className="relative flex min-h-[160px] flex-col justify-between overflow-hidden rounded-2xl p-4"
+            className="relative flex flex-col justify-between gap-4 overflow-hidden rounded-2xl p-3"
             style={{ backgroundColor: card.tint }}
           >
             <div className="flex items-center gap-3">
@@ -104,8 +104,8 @@ export function FeatureSections({
               </div>
             </div>
 
-            <div className="mt-6">
-              <span className="inline-flex items-baseline gap-1 rounded-full bg-white/5 px-3 py-1.5 text-sm font-semibold text-main">
+            <div>
+              <span className="inline-flex items-baseline gap-1 rounded-full bg-white/5 px-2.5 py-1 text-xs font-semibold text-main">
                 {card.aprRange}
                 <span className="text-[9px] font-bold uppercase tracking-wide text-faint">
                   APR
@@ -116,7 +116,7 @@ export function FeatureSections({
         ))}
       </div>
 
-      {footer ? <div className="mt-auto pt-6">{footer}</div> : null}
+      {footer ? <div className="mt-4">{footer}</div> : null}
     </section>
   );
 }
