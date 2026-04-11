@@ -1,6 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+import Image from "next/image";
 import { useMemo } from "react";
 import { useExpertStore } from "@/stores";
 import type { VaultRisk, VaultSortKey, VaultStrategy } from "@/types";
@@ -171,6 +172,20 @@ export function VaultList() {
         >
           Deposit into selected vault
         </button>
+      </div>
+
+      <div className="mt-3 flex items-center justify-center gap-2 pb-1">
+        <span className="text-[11px] font-medium text-faint">Powered by</span>
+        <Image
+          src="/Assets/Images/Logo-Brand/logo_lifi_light.svg"
+          alt="LI.FI"
+          width={14}
+          height={14}
+          className="invert opacity-80"
+        />
+        <span className="text-[11px] font-semibold tracking-tight text-muted">
+          LI.FI
+        </span>
       </div>
     </section>
   );

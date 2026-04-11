@@ -77,9 +77,12 @@
   --tw-ring-color: #1e40af;
 }
 
-html,
-body {
+html {
   background-color: #0d0e0f;
+}
+
+body {
+  background-color: transparent;
   color: #ffffff;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;

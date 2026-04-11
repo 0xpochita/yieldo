@@ -1,4 +1,5 @@
-import { TopNav } from "@/components/layout";
+import { BackgroundDecor } from "@/components/layout";
+import { Navbar1 } from "@/components/ui";
 
 export default function AppLayout({
   children,
@@ -6,9 +7,10 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-main">
-      <TopNav />
-      <div className="flex flex-1 flex-col">{children}</div>
+    <div className="relative flex min-h-screen flex-col">
+      <BackgroundDecor />
+      <Navbar1 />
+      <div className="relative flex flex-1 flex-col">{children}</div>
     </div>
   );
 }

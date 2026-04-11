@@ -1,1 +1,1 @@
-export { TopNav } from "./top-nav";
+export { BackgroundDecor } from "./background-decor";

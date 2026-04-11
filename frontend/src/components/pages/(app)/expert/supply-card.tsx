@@ -7,7 +7,6 @@ import { useExpertStore } from "@/stores";
 import { Selector } from "./selector";
 
 const YEARLY_APY_ESTIMATE = 0.0842;
-const TABS = ["Supply", "Withdraw", "Zap"] as const;
 
 function formatUsd(value: number): string {
   if (!Number.isFinite(value) || value <= 0) return "0.00";
@@ -71,23 +70,8 @@ export function SupplyCard() {
   return (
     <section className="rounded-3xl border border-main bg-surface p-3 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
       <div className="flex items-center justify-between px-3 pt-2">
-        <div className="flex items-center gap-1">
-          {TABS.map((tab) => {
-            const isActive = tab === "Supply";
-            return (
-              <button
-                key={tab}
-                type="button"
-                className={
-                  isActive
-                    ? "rounded-full bg-surface-muted px-4 py-2 text-sm font-semibold text-main cursor-pointer transition-all duration-200 ease-in-out"
-                    : "rounded-full px-4 py-2 text-sm font-medium text-muted cursor-pointer transition-all duration-200 ease-in-out hover:text-main"
-                }
-              >
-                {tab}
-              </button>
-            );
-          })}
+        <div className="rounded-full bg-surface-muted px-4 py-2 text-sm font-semibold text-main">
+          Supply
         </div>
         <button
           type="button"
