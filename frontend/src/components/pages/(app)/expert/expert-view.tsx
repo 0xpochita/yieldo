@@ -1,3 +1,4 @@
+import { DepositSheet } from "./deposit-sheet";
 import { ExpertBackground } from "./expert-background";
 import { SupplyCard } from "./supply-card";
 import { VaultList } from "./vault-list";
@@ -10,6 +11,7 @@ export function ExpertView() {
         <SupplyCard />
         <VaultList />
       </main>
+      <DepositSheet />
     </>
   );
 }

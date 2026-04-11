@@ -1,12 +1,15 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 type SelectorOption = {
   key: string;
   label: string;
   hint?: string;
+  iconUrl?: string;
 };
 
 type SelectorProps = {
@@ -16,6 +19,40 @@ type SelectorProps = {
   onSelect: (key: string) => void;
   variant?: "chip" | "pill";
 };
+
+function OptionIcon({
+  option,
+  size,
+}: {
+  option: SelectorOption;
+  size: number;
+}) {
+  if (option.iconUrl) {
+    return (
+      <span
+        className="relative overflow-hidden rounded-full bg-surface-muted"
+        style={{ width: size, height: size }}
+      >
+        <Image
+          src={option.iconUrl}
+          alt=""
+          fill
+          sizes={`${size}px`}
+          className="object-contain"
+          unoptimized
+        />
+      </span>
+    );
+  }
+  return (
+    <span
+      className="flex items-center justify-center rounded-full bg-brand text-[11px] font-semibold text-white"
+      style={{ width: size, height: size }}
+    >
+      {option.label.charAt(0)}
+    </span>
+  );
+}
 
 export function Selector({
   label,
@@ -43,62 +80,136 @@ export function Selector({
 
   const triggerClass =
     variant === "chip"
-      ? "flex items-center gap-2 rounded-full bg-surface-muted border border-main px-3 py-1.5 text-sm font-semibold text-main cursor-pointer transition-all duration-200 ease-in-out hover:border-strong"
-      : "flex items-center gap-2 rounded-full bg-surface-raised border border-main px-3 py-2 text-sm font-semibold text-main cursor-pointer transition-all duration-200 ease-in-out hover:border-strong";
+      ? "flex items-center gap-2 rounded-full bg-surface-muted border border-main px-3 py-1.5 text-sm font-semibold text-main cursor-pointer transition-colors duration-200 ease-in-out hover:border-strong"
+      : "flex items-center gap-2 rounded-full bg-surface-raised border border-main px-3 py-2 text-sm font-semibold text-main cursor-pointer transition-colors duration-200 ease-in-out hover:border-strong";
 
   return (
     <div ref={containerRef} className="relative">
-      <button
+      <motion.button
         type="button"
         aria-label={label}
         onClick={() => setOpen((prev) => !prev)}
         className={triggerClass}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.96 }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
       >
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand text-[11px] font-semibold text-white">
-          {active.label.charAt(0)}
-        </span>
-        <span className="tracking-tight">{active.label}</span>
-        <ChevronDown className="h-4 w-4 text-muted" />
-      </button>
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={active.key}
+            initial={{ opacity: 0, scale: 0.6, rotate: -45 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.6, rotate: 45 }}
+            transition={{ type: "spring", stiffness: 480, damping: 28 }}
+            className="flex"
+          >
+            <OptionIcon option={active} size={24} />
+          </motion.span>
+        </AnimatePresence>
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={`label-${active.key}`}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="tracking-tight"
+          >
+            {active.label}
+          </motion.span>
+        </AnimatePresence>
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ type: "spring", stiffness: 400, damping: 26 }}
+          className="flex"
+        >
+          <ChevronDown className="h-4 w-4 text-muted" />
+        </motion.span>
+      </motion.button>
 
-      {open ? (
-        <div className="absolute right-0 z-20 mt-2 w-60 overflow-hidden rounded-2xl border border-main bg-surface-raised shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
-          <ul className="divide-y divide-[var(--color-line)]">
-            {options.map((option) => {
-              const isActive = option.key === active.key;
-              return (
-                <li key={option.key}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelect(option.key);
-                      setOpen(false);
+      <AnimatePresence>
+        {open ? (
+          <motion.div
+            key="dropdown"
+            initial={{ opacity: 0, y: -6, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.96 }}
+            transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
+            className="absolute right-0 z-20 mt-2 w-60 origin-top-right overflow-hidden rounded-2xl border border-main bg-surface-raised shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
+            style={{ willChange: "transform, opacity" }}
+          >
+            <motion.ul
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: {
+                  transition: {
+                    staggerChildren: 0.04,
+                    delayChildren: 0.02,
+                  },
+                },
+              }}
+              className="divide-y divide-[var(--color-line)]"
+            >
+              {options.map((option) => {
+                const isActive = option.key === active.key;
+                return (
+                  <motion.li
+                    key={option.key}
+                    variants={{
+                      hidden: { opacity: 0, x: -8 },
+                      visible: { opacity: 1, x: 0 },
                     }}
-                    className="flex w-full items-center justify-between px-4 py-3 text-left cursor-pointer transition-all duration-200 ease-in-out hover:bg-surface-muted"
+                    transition={{ duration: 0.22, ease: "easeOut" }}
                   >
-                    <span className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-soft text-[11px] font-semibold text-brand">
-                        {option.label.charAt(0)}
-                      </span>
-                      <span className="flex flex-col">
-                        <span className="text-sm font-semibold text-main">
-                          {option.label}
+                    <motion.button
+                      type="button"
+                      onClick={() => {
+                        onSelect(option.key);
+                        setOpen(false);
+                      }}
+                      whileHover={{ x: 4 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 420,
+                        damping: 28,
+                      }}
+                      className="flex w-full items-center justify-between px-4 py-3 text-left cursor-pointer hover:bg-surface-muted"
+                    >
+                      <span className="flex items-center gap-3">
+                        <OptionIcon option={option} size={28} />
+                        <span className="flex flex-col">
+                          <span className="text-sm font-semibold text-main">
+                            {option.label}
+                          </span>
+                          {option.hint ? (
+                            <span className="text-xs text-muted">
+                              {option.hint}
+                            </span>
+                          ) : null}
                         </span>
-                        {option.hint ? (
-                          <span className="text-xs text-muted">{option.hint}</span>
-                        ) : null}
                       </span>
-                    </span>
-                    {isActive ? (
-                      <span className="h-2 w-2 rounded-full bg-brand" />
-                    ) : null}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ) : null}
+                      {isActive ? (
+                        <motion.span
+                          layoutId={`active-dot-${label}`}
+                          className="h-2 w-2 rounded-full bg-brand"
+                          transition={{
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 30,
+                          }}
+                        />
+                      ) : null}
+                    </motion.button>
+                  </motion.li>
+                );
+              })}
+            </motion.ul>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

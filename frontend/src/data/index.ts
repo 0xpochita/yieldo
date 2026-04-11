@@ -1,1 +1,1 @@
-export { mockChains, mockTokens, mockVaults } from "./expert-mock";
+export { mockChains, mockTokens } from "./expert-mock";

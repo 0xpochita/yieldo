@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowDown, Settings } from "lucide-react";
-import { useMemo } from "react";
+import { ArrowDown } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { mockChains, mockTokens } from "@/data";
-import { useExpertStore } from "@/stores";
+import { useExpertStore, useMetaStore } from "@/stores";
 import { Selector } from "./selector";
 
 const YEARLY_APY_ESTIMATE = 0.0842;
@@ -24,6 +24,14 @@ export function SupplyCard() {
   const setChain = useExpertStore((state) => state.setChain);
   const setAmount = useExpertStore((state) => state.setAmount);
 
+  const chainsById = useMetaStore((state) => state.chainsById);
+  const tokensBySymbol = useMetaStore((state) => state.tokensBySymbol);
+  const loadMeta = useMetaStore((state) => state.loadMeta);
+
+  useEffect(() => {
+    loadMeta();
+  }, [loadMeta]);
+
   const amountNumber = Number.parseFloat(amount || "0");
   const usdValue = Number.isFinite(amountNumber)
     ? amountNumber * token.usdPrice
@@ -36,8 +44,10 @@ export function SupplyCard() {
         key: item.symbol,
         label: item.symbol,
         hint: item.name,
+        iconUrl:
+          tokensBySymbol[chain.id]?.[item.symbol.toUpperCase()]?.logoURI,
       })),
-    [],
+    [chain.id, tokensBySymbol],
   );
 
   const chainOptions = useMemo(
@@ -46,8 +56,9 @@ export function SupplyCard() {
         key: String(item.id),
         label: item.shortName,
         hint: item.name,
+        iconUrl: chainsById[item.id]?.logoURI,
       })),
-    [],
+    [chainsById],
   );
 
   function handleAmountChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -73,26 +84,20 @@ export function SupplyCard() {
         <div className="rounded-full bg-surface-muted px-4 py-2 text-sm font-semibold text-main">
           Supply
         </div>
-        <button
-          type="button"
-          aria-label="Settings"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-muted cursor-pointer transition-all duration-200 ease-in-out hover:bg-surface-muted hover:text-main"
-        >
-          <Settings className="h-4 w-4" />
-        </button>
+        <Selector
+          label="Select network"
+          value={String(chain.id)}
+          options={chainOptions}
+          onSelect={handleChainSelect}
+          variant="pill"
+        />
       </div>
 
       <div className="relative mt-3">
         <div className="rounded-2xl bg-surface-raised p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted">Supply</span>
-            <Selector
-              label="Select network"
-              value={String(chain.id)}
-              options={chainOptions}
-              onSelect={handleChainSelect}
-              variant="chip"
-            />
+            <span className="text-sm font-medium text-muted">You supply</span>
+            <span className="text-xs text-muted">on {chain.shortName}</span>
           </div>
           <div className="mt-3 flex items-center justify-between gap-4">
             <input
@@ -113,9 +118,7 @@ export function SupplyCard() {
           </div>
           <div className="mt-3 flex items-center justify-between text-sm">
             <span className="text-muted">${formatUsd(usdValue)}</span>
-            <span className="text-muted">
-              Balance 0.00 {token.symbol}
-            </span>
+            <span className="text-muted">Balance 0.00 {token.symbol}</span>
           </div>
         </div>
 
