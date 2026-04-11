@@ -27,12 +27,18 @@ type ExpertState = {
   error: string | null;
   showOnlyTransactional: boolean;
   riskFilter: VaultRiskFilter;
+  protocolFilter: string | null;
+  apyMinFilter: number | null;
+  tvlMinFilter: number | null;
   setToken: (token: Token) => void;
   setChain: (chain: Chain) => void;
   setAmount: (value: string) => void;
   setSortBy: (sortBy: VaultSortKey) => void;
   setShowOnlyTransactional: (value: boolean) => void;
   setRiskFilter: (filter: VaultRiskFilter) => void;
+  setProtocolFilter: (protocolKey: string | null) => void;
+  setApyMinFilter: (value: number | null) => void;
+  setTvlMinFilter: (value: number | null) => void;
   selectVault: (id: string) => void;
   fetchVaults: () => Promise<void>;
 };
@@ -121,6 +127,9 @@ export const useExpertStore = create<ExpertState>((set, get) => ({
   error: null,
   showOnlyTransactional: true,
   riskFilter: "all",
+  protocolFilter: null,
+  apyMinFilter: null,
+  tvlMinFilter: null,
   setToken: (token) => set({ token }),
   setChain: (chain) => set({ chain }),
   setAmount: (amount) => set({ amount }),
@@ -128,6 +137,9 @@ export const useExpertStore = create<ExpertState>((set, get) => ({
   setShowOnlyTransactional: (showOnlyTransactional) =>
     set({ showOnlyTransactional }),
   setRiskFilter: (riskFilter) => set({ riskFilter }),
+  setProtocolFilter: (protocolFilter) => set({ protocolFilter }),
+  setApyMinFilter: (apyMinFilter) => set({ apyMinFilter }),
+  setTvlMinFilter: (tvlMinFilter) => set({ tvlMinFilter }),
   selectVault: (selectedVaultId) => set({ selectedVaultId }),
   fetchVaults: async () => {
     const { token, chain } = get();
@@ -162,6 +174,9 @@ export const useExpertStore = create<ExpertState>((set, get) => ({
         selectedVaultId: firstTransactional?.id ?? vaults[0]?.id ?? null,
         status: "success",
         error: null,
+        protocolFilter: null,
+        apyMinFilter: null,
+        tvlMinFilter: null,
       });
     } catch (error) {
       if ((error as Error).name === "AbortError") return;

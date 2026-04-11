@@ -87,7 +87,7 @@ function formatTimelock(seconds: number): string {
 
 function explorerUrl(vault: VaultStrategy): string | null {
   const base = BLOCK_EXPLORERS[vault.chainId];
-  if (!base) return vault.protocolUrl ?? null;
+  if (!base) return null;
   return `${base}/${vault.vaultAddress}`;
 }
 
@@ -192,7 +192,8 @@ function ActiveReview({
   tokenSymbol: string;
 }) {
   const [copied, setCopied] = useState(false);
-  const link = explorerUrl(vault);
+  const explorerLink = explorerUrl(vault);
+  const vaultLink = vault.protocolUrl ?? null;
 
   async function handleCopy() {
     try {
@@ -249,17 +250,34 @@ function ActiveReview({
             {vault.tokenSymbol} · {vault.chainShortName}
           </span>
         </div>
-        {link ? (
-          <a
-            href={link}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Open in block explorer"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-main bg-surface text-muted transition-colors hover:border-strong hover:text-main"
-          >
-            <FiExternalLink className="h-3.5 w-3.5" />
-          </a>
-        ) : null}
+        <div className="flex items-center gap-1.5">
+          {vaultLink ? (
+            <a
+              href={vaultLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open vault page"
+              title="Open vault page"
+              className="flex h-8 items-center justify-center gap-1 rounded-lg border border-main bg-surface px-2 text-[10px] font-semibold text-muted transition-colors hover:border-strong hover:text-main"
+            >
+              Vault
+              <FiExternalLink className="h-3 w-3" />
+            </a>
+          ) : null}
+          {explorerLink ? (
+            <a
+              href={explorerLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open contract in block explorer"
+              title="Open contract in block explorer"
+              className="flex h-8 items-center justify-center gap-1 rounded-lg border border-main bg-surface px-2 text-[10px] font-semibold text-muted transition-colors hover:border-strong hover:text-main"
+            >
+              Contract
+              <FiExternalLink className="h-3 w-3" />
+            </a>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -313,7 +331,7 @@ function ActiveReview({
             ) : null}
             Your Estimated Balance
           </span>
-          <span className="text-[10px] font-semibold text-brand">
+          <span className="text-[10px] font-semibold text-[#60a5fa]">
             {formatApy(vault.apy)} APY
           </span>
         </div>
@@ -385,7 +403,7 @@ function Stat({
       <span
         className={
           accent
-            ? "text-sm font-semibold text-brand"
+            ? "text-sm font-semibold text-[#60a5fa]"
             : "text-[13px] font-semibold text-main"
         }
       >

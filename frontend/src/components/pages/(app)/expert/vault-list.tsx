@@ -3,6 +3,7 @@
 import {
   FiAlertTriangle,
   FiCheck,
+  FiChevronDown,
   FiClock,
   FiExternalLink,
   FiInbox,
@@ -10,7 +11,7 @@ import {
 import { HiOutlineShieldCheck } from "react-icons/hi2";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { VaultRiskFilter } from "@/stores";
 import { useDepositStore, useExpertStore, useMetaStore } from "@/stores";
 import type { VaultRisk, VaultSortKey, VaultStrategy } from "@/types";
@@ -22,6 +23,126 @@ const RISK_FILTERS: { key: VaultRiskFilter; label: string }[] = [
   { key: "medium", label: "Medium" },
   { key: "high", label: "High" },
 ];
+
+type ProtocolOption = {
+  key: string;
+  label: string;
+  logo?: string;
+  count: number;
+};
+
+function ProtocolFilterDropdown({
+  active,
+  options,
+  onSelect,
+}: {
+  active: ProtocolOption | null;
+  options: ProtocolOption[];
+  onSelect: (key: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  const total = options.reduce((sum, option) => sum + option.count, 0);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex items-center gap-1.5 rounded-full bg-surface-raised px-3 py-1.5 text-xs font-semibold text-main cursor-pointer transition-colors hover:bg-surface-muted"
+      >
+        {active?.logo ? (
+          <Image
+            src={active.logo}
+            alt={active.label}
+            width={14}
+            height={14}
+            className="h-3.5 w-3.5 rounded-full object-contain"
+            unoptimized
+          />
+        ) : null}
+        <span className="max-w-28 truncate">
+          {active ? active.label : "Protocol"}
+        </span>
+        <FiChevronDown
+          className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      <AnimatePresence>
+        {open ? (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-[calc(100%+6px)] z-20 flex max-h-64 w-56 flex-col overflow-y-auto rounded-2xl border border-main bg-surface-raised p-1 shadow-[0_16px_40px_rgba(0,0,0,0.45)]"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                onSelect(null);
+                setOpen(false);
+              }}
+              className={
+                !active
+                  ? "flex items-center justify-between gap-2 rounded-xl bg-surface-muted px-3 py-2 text-left text-xs font-semibold text-main cursor-pointer"
+                  : "flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-muted cursor-pointer hover:bg-surface-muted hover:text-main"
+              }
+            >
+              <span>All protocols</span>
+              <span className="text-[10px] text-faint">{total}</span>
+            </button>
+            {options.map((option) => {
+              const isActive = active?.key === option.key;
+              return (
+                <button
+                  key={option.key}
+                  type="button"
+                  onClick={() => {
+                    onSelect(option.key);
+                    setOpen(false);
+                  }}
+                  className={
+                    isActive
+                      ? "flex items-center justify-between gap-2 rounded-xl bg-surface-muted px-3 py-2 text-left text-xs font-semibold text-main cursor-pointer"
+                      : "flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-muted cursor-pointer hover:bg-surface-muted hover:text-main"
+                  }
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    {option.logo ? (
+                      <Image
+                        src={option.logo}
+                        alt={option.label}
+                        width={16}
+                        height={16}
+                        className="h-4 w-4 shrink-0 rounded-full object-contain"
+                        unoptimized
+                      />
+                    ) : null}
+                    <span className="truncate">{option.label}</span>
+                  </span>
+                  <span className="text-[10px] text-faint">{option.count}</span>
+                </button>
+              );
+            })}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 function RiskFilterChips({
   active,
@@ -59,10 +180,177 @@ function RiskFilterChips({
   );
 }
 
-const SORT_OPTIONS: { key: VaultSortKey; label: string }[] = [
-  { key: "apy", label: "APY" },
-  { key: "tvl", label: "TVL" },
-  { key: "protocol", label: "Protocol" },
+type ThresholdPreset = { label: string; value: number };
+
+function formatThreshold(
+  value: number | null,
+  kind: "apy" | "tvl",
+): string | null {
+  if (value === null) return null;
+  if (kind === "apy") return `${value}%`;
+  if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(0)}B`;
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(0)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(0)}K`;
+  return value.toString();
+}
+
+function parseCustomThreshold(raw: string, kind: "apy" | "tvl"): number | null {
+  const cleaned = raw.trim().replace(/[>$%,\s]/g, "");
+  if (!cleaned) return null;
+  const match = cleaned.match(/^([0-9]*\.?[0-9]+)([kmb])?$/i);
+  if (!match) return null;
+  let amount = Number.parseFloat(match[1]);
+  const suffix = match[2]?.toLowerCase();
+  if (kind === "tvl") {
+    if (suffix === "k") amount *= 1_000;
+    else if (suffix === "m") amount *= 1_000_000;
+    else if (suffix === "b") amount *= 1_000_000_000;
+  }
+  if (!Number.isFinite(amount) || amount < 0) return null;
+  return amount;
+}
+
+function MinThresholdDropdown({
+  label,
+  kind,
+  presets,
+  placeholder,
+  active,
+  onSelect,
+}: {
+  label: string;
+  kind: "apy" | "tvl";
+  presets: ThresholdPreset[];
+  placeholder: string;
+  active: number | null;
+  onSelect: (value: number | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [customValue, setCustomValue] = useState("");
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  const activeLabel = formatThreshold(active, kind);
+
+  function handleCustomSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    const parsed = parseCustomThreshold(customValue, kind);
+    if (parsed === null) return;
+    onSelect(parsed);
+    setCustomValue("");
+    setOpen(false);
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex items-center gap-1.5 rounded-full bg-surface-raised px-3 py-1.5 text-xs font-semibold text-main cursor-pointer transition-colors hover:bg-surface-muted"
+      >
+        <span className="text-[10px] font-medium uppercase tracking-wide text-faint">
+          {label}
+        </span>
+        <span>{activeLabel ? `>${activeLabel}` : "Any"}</span>
+        <FiChevronDown
+          className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      <AnimatePresence>
+        {open ? (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-[calc(100%+6px)] z-20 flex w-52 flex-col gap-1 overflow-hidden rounded-2xl border border-main bg-surface-raised p-2 shadow-[0_16px_40px_rgba(0,0,0,0.45)]"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                onSelect(null);
+                setOpen(false);
+              }}
+              className={
+                active === null
+                  ? "flex items-center justify-between gap-2 rounded-xl bg-surface-muted px-3 py-2 text-left text-xs font-semibold text-main cursor-pointer"
+                  : "flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-muted cursor-pointer hover:bg-surface-muted hover:text-main"
+              }
+            >
+              <span>Any {label.toLowerCase()}</span>
+              {active === null ? <FiCheck className="h-3 w-3" /> : null}
+            </button>
+            {presets.map((preset) => {
+              const isActive = active === preset.value;
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => {
+                    onSelect(preset.value);
+                    setOpen(false);
+                  }}
+                  className={
+                    isActive
+                      ? "flex items-center justify-between gap-2 rounded-xl bg-surface-muted px-3 py-2 text-left text-xs font-semibold text-main cursor-pointer"
+                      : "flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-muted cursor-pointer hover:bg-surface-muted hover:text-main"
+                  }
+                >
+                  <span>{preset.label}</span>
+                  {isActive ? <FiCheck className="h-3 w-3" /> : null}
+                </button>
+              );
+            })}
+            <form
+              onSubmit={handleCustomSubmit}
+              className="mt-1 flex items-center gap-1 rounded-xl border border-main bg-surface px-2 py-1.5"
+            >
+              <span className="text-[11px] font-semibold text-faint">
+                &gt;
+              </span>
+              <input
+                type="text"
+                value={customValue}
+                onChange={(event) => setCustomValue(event.target.value)}
+                placeholder={placeholder}
+                className="min-w-0 flex-1 bg-transparent text-[11px] font-medium text-main outline-none placeholder:text-faint"
+              />
+              <button
+                type="submit"
+                className="rounded-md bg-brand px-2 py-0.5 text-[10px] font-semibold text-white cursor-pointer hover-brand"
+              >
+                Apply
+              </button>
+            </form>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+const APY_PRESETS: ThresholdPreset[] = [
+  { label: ">3%", value: 3 },
+  { label: ">5%", value: 5 },
+  { label: ">10%", value: 10 },
+  { label: ">20%", value: 20 },
+];
+
+const TVL_PRESETS: ThresholdPreset[] = [
+  { label: ">$100K", value: 100_000 },
+  { label: ">$1M", value: 1_000_000 },
+  { label: ">$10M", value: 10_000_000 },
+  { label: ">$100M", value: 100_000_000 },
 ];
 
 const RISK_LABEL: Record<VaultRisk, string> = {
@@ -73,7 +361,7 @@ const RISK_LABEL: Record<VaultRisk, string> = {
 
 const RISK_CLASS: Record<VaultRisk, string> = {
   low: "bg-[rgba(64,182,107,0.12)] text-[var(--color-positive)]",
-  medium: "bg-brand-soft text-brand",
+  medium: "bg-[rgba(96,165,250,0.14)] text-[#60a5fa]",
   high: "bg-[rgba(250,43,57,0.12)] text-[var(--color-negative)]",
 };
 
@@ -121,9 +409,6 @@ function sortVaults(
   const next = [...vaults];
   if (sortBy === "apy") next.sort((a, b) => b.apy - a.apy);
   if (sortBy === "tvl") next.sort((a, b) => b.tvlUsd - a.tvlUsd);
-  if (sortBy === "protocol") {
-    next.sort((a, b) => a.protocol.localeCompare(b.protocol));
-  }
   return next;
 }
 
@@ -269,11 +554,16 @@ export function VaultList() {
     (state) => state.showOnlyTransactional,
   );
   const riskFilter = useExpertStore((state) => state.riskFilter);
-  const setSortBy = useExpertStore((state) => state.setSortBy);
+  const protocolFilter = useExpertStore((state) => state.protocolFilter);
+  const apyMinFilter = useExpertStore((state) => state.apyMinFilter);
+  const tvlMinFilter = useExpertStore((state) => state.tvlMinFilter);
   const setShowOnlyTransactional = useExpertStore(
     (state) => state.setShowOnlyTransactional,
   );
   const setRiskFilter = useExpertStore((state) => state.setRiskFilter);
+  const setProtocolFilter = useExpertStore((state) => state.setProtocolFilter);
+  const setApyMinFilter = useExpertStore((state) => state.setApyMinFilter);
+  const setTvlMinFilter = useExpertStore((state) => state.setTvlMinFilter);
   const selectVault = useExpertStore((state) => state.selectVault);
   const fetchVaults = useExpertStore((state) => state.fetchVaults);
   const openDepositSheet = useDepositStore((state) => state.openSheet);
@@ -310,9 +600,65 @@ export function VaultList() {
     const base = showOnlyTransactional
       ? vaults.filter((vault) => vault.isTransactional)
       : vaults;
-    if (riskFilter === "all") return base;
-    return base.filter((vault) => vault.risk === riskFilter);
-  }, [vaults, showOnlyTransactional, riskFilter]);
+    const afterRisk =
+      riskFilter === "all"
+        ? base
+        : base.filter((vault) => vault.risk === riskFilter);
+    const afterProtocol = !protocolFilter
+      ? afterRisk
+      : afterRisk.filter((vault) => vault.protocolKey === protocolFilter);
+    const afterApy =
+      apyMinFilter === null
+        ? afterProtocol
+        : afterProtocol.filter((vault) => vault.apy >= apyMinFilter);
+    const afterTvl =
+      tvlMinFilter === null
+        ? afterApy
+        : afterApy.filter((vault) => vault.tvlUsd >= tvlMinFilter);
+    return afterTvl;
+  }, [
+    vaults,
+    showOnlyTransactional,
+    riskFilter,
+    protocolFilter,
+    apyMinFilter,
+    tvlMinFilter,
+  ]);
+
+  const protocolOptions = useMemo(() => {
+    const base = showOnlyTransactional
+      ? vaults.filter((vault) => vault.isTransactional)
+      : vaults;
+    const map = new Map<
+      string,
+      { key: string; label: string; logo?: string; count: number }
+    >();
+    for (const vault of base) {
+      const existing = map.get(vault.protocolKey);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        map.set(vault.protocolKey, {
+          key: vault.protocolKey,
+          label: vault.protocol,
+          logo: vault.protocolLogoUri,
+          count: 1,
+        });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) =>
+      a.label.localeCompare(b.label),
+    );
+  }, [vaults, showOnlyTransactional]);
+
+  const activeProtocolOption = useMemo(
+    () =>
+      protocolFilter
+        ? protocolOptions.find((option) => option.key === protocolFilter) ??
+          null
+        : null,
+    [protocolFilter, protocolOptions],
+  );
 
   const riskCounts = useMemo(() => {
     const base = showOnlyTransactional
@@ -384,24 +730,28 @@ export function VaultList() {
             </h2>
           </div>
         </div>
-        <div className="flex items-center gap-1 rounded-full bg-surface-raised p-1">
-          {SORT_OPTIONS.map((option) => {
-            const isActive = option.key === sortBy;
-            return (
-              <button
-                key={option.key}
-                type="button"
-                onClick={() => setSortBy(option.key)}
-                className={
-                  isActive
-                    ? "rounded-full bg-surface-muted px-3 py-1.5 text-xs font-semibold text-main cursor-pointer transition-all duration-200 ease-in-out"
-                    : "rounded-full px-3 py-1.5 text-xs font-medium text-muted cursor-pointer transition-all duration-200 ease-in-out hover:text-main"
-                }
-              >
-                {option.label}
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <MinThresholdDropdown
+            label="APY"
+            kind="apy"
+            presets={APY_PRESETS}
+            placeholder="e.g. 7.5"
+            active={apyMinFilter}
+            onSelect={setApyMinFilter}
+          />
+          <MinThresholdDropdown
+            label="TVL"
+            kind="tvl"
+            presets={TVL_PRESETS}
+            placeholder="e.g. 2M"
+            active={tvlMinFilter}
+            onSelect={setTvlMinFilter}
+          />
+          <ProtocolFilterDropdown
+            active={activeProtocolOption}
+            options={protocolOptions}
+            onSelect={setProtocolFilter}
+          />
         </div>
       </header>
 
@@ -625,7 +975,7 @@ export function VaultList() {
                         <span className="text-[10px] uppercase tracking-wide text-faint">
                           APY
                         </span>
-                        <span className="text-base font-semibold text-brand">
+                        <span className="text-base font-semibold text-[#60a5fa]">
                           {formatApy(vault.apy)}
                         </span>
                         {showAvg30d && vault.apy30d !== null ? (

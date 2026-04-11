@@ -36,4 +36,4 @@ export type VaultStrategy = {
   tags: string[];
 };
 
-export type VaultSortKey = "apy" | "tvl" | "protocol";
+export type VaultSortKey = "apy" | "tvl";
