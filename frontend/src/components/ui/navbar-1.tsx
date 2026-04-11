@@ -1,11 +1,12 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { Menu, Wallet, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { WalletButton } from "./wallet-button";
 
 const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Earn", href: "/expert" },
@@ -78,13 +79,7 @@ const Navbar1 = () => {
           transition={{ duration: 0.3, delay: 0.2 }}
           whileHover={{ scale: 1.05 }}
         >
-          <button
-            type="button"
-            className="relative z-10 inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(30,64,175,0.45)] transition-colors cursor-pointer hover-brand"
-          >
-            <Wallet className="h-4 w-4" />
-            Connect wallet
-          </button>
+          <WalletButton variant="desktop" />
         </motion.div>
 
         <motion.button
@@ -145,14 +140,7 @@ const Navbar1 = () => {
                 transition={{ delay: 0.5 }}
                 exit={{ opacity: 0, y: 20 }}
               >
-                <button
-                  type="button"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-base font-semibold text-white transition-colors cursor-pointer hover-brand"
-                  onClick={toggleMenu}
-                >
-                  <Wallet className="h-5 w-5" />
-                  Connect wallet
-                </button>
+                <WalletButton variant="mobile" />
               </motion.div>
             </div>
           </motion.div>
