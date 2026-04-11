@@ -13,6 +13,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef } from "react";
 import { useDepositStore, useExpertStore, useMetaStore } from "@/stores";
 import type { VaultRisk, VaultSortKey, VaultStrategy } from "@/types";
+import { IdleAggregatorCard } from "./idle-aggregator-card";
 
 const SORT_OPTIONS: { key: VaultSortKey; label: string }[] = [
   { key: "apy", label: "APY" },
@@ -224,8 +225,12 @@ export function VaultList() {
   }, [loadMeta]);
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const parsedAmount = Number.parseFloat(amount || "0");
+  const amountIsValid = Number.isFinite(parsedAmount) && parsedAmount > 0;
 
   useEffect(() => {
+    if (!amountIsValid) return;
+
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
@@ -238,7 +243,7 @@ export function VaultList() {
         clearTimeout(debounceTimer.current);
       }
     };
-  }, [token, chain, amount, fetchVaults]);
+  }, [token, chain, amountIsValid, fetchVaults]);
 
   const filtered = useMemo(() => {
     if (!showOnlyTransactional) return vaults;
@@ -259,8 +264,7 @@ export function VaultList() {
   const hasData = status === "success" && sorted.length > 0;
   const isEmpty = status === "success" && sorted.length === 0;
 
-  const amountNumber = Number.parseFloat(amount || "0");
-  const hasValidAmount = Number.isFinite(amountNumber) && amountNumber > 0;
+  const hasValidAmount = amountIsValid;
   const depositDisabled =
     !hasData ||
     !selectedVault ||
@@ -275,6 +279,10 @@ export function VaultList() {
       chain,
       amount,
     });
+  }
+
+  if (!hasValidAmount) {
+    return <IdleAggregatorCard />;
   }
 
   return (
