@@ -133,23 +133,19 @@ export function SupplyCard() {
             <span className="text-sm font-medium text-muted">
               Estimated yearly yield
             </span>
-            <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand">
+            <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand whitespace-nowrap">
               {(YEARLY_APY_ESTIMATE * 100).toFixed(2)}% APY
             </span>
           </div>
-          <div className="mt-3 flex items-center justify-between gap-4">
-            <input
-              type="text"
-              readOnly
-              disabled
-              value={formatUsd(estimatedYearly)}
-              className="w-full cursor-not-allowed bg-transparent text-[36px] font-medium leading-none tracking-tight text-main outline-none"
-            />
-            <div className="flex items-center gap-2 rounded-full border border-main bg-surface-muted px-3 py-2 text-sm font-semibold text-muted">
-              USD / yr
-            </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="flex-1 truncate text-[36px] font-medium leading-none tracking-tight text-main">
+              ${formatUsd(estimatedYearly)}
+            </span>
+            <span className="text-xs font-medium uppercase tracking-wide text-faint whitespace-nowrap">
+              / year
+            </span>
           </div>
-          <div className="mt-3 flex items-center justify-between text-sm">
+          <div className="mt-3 flex items-center justify-between text-xs">
             <span className="text-muted">
               ~${formatUsd(estimatedYearly / 12)} / month
             </span>

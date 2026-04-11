@@ -280,13 +280,24 @@ export function VaultList() {
   return (
     <section className="rounded-3xl border border-main bg-surface p-3 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
       <header className="flex items-center justify-between px-3 pt-2">
-        <div className="flex flex-col">
-          <span className="text-[11px] uppercase tracking-[0.16em] text-faint">
-            Routes
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-brand-soft">
+            <Image
+              src="/Assets/Images/Logo-Brand/yieldo-logo.png"
+              alt="Yieldo"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain rounded-full"
+            />
           </span>
-          <h2 className="text-base font-semibold tracking-tight text-main">
-            Vault strategies
-          </h2>
+          <div className="flex flex-col">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-faint">
+              Routes
+            </span>
+            <h2 className="text-base font-semibold tracking-tight text-main">
+              Vault Aggregator
+            </h2>
+          </div>
         </div>
         <div className="flex items-center gap-1 rounded-full bg-surface-raised p-1">
           {SORT_OPTIONS.map((option) => {
@@ -310,10 +321,24 @@ export function VaultList() {
       </header>
 
       <div className="mt-2 flex items-center justify-between px-3">
-        <span className="text-xs text-muted">
-          {hasData
-            ? `${sorted.length} route${sorted.length === 1 ? "" : "s"} via LI.FI Earn`
-            : "Discovering vault routes"}
+        <span className="flex items-center gap-1.5 text-xs text-muted">
+          {hasData ? (
+            <>
+              <span>
+                {sorted.length} route{sorted.length === 1 ? "" : "s"} via
+              </span>
+              <Image
+                src="/Assets/Images/Logo-Brand/logo_lifi_light.svg"
+                alt="LI.FI"
+                width={12}
+                height={12}
+                className="invert opacity-80"
+              />
+              <span className="font-semibold text-main">LI.FI Earn</span>
+            </>
+          ) : (
+            <span>Discovering vault routes</span>
+          )}
         </span>
         <button
           type="button"
@@ -355,6 +380,7 @@ export function VaultList() {
               const isSelected = vault.id === selectedVaultId;
               const isBest = vault.id === best?.id;
               const protocolMeta =
+                protocolsByName[vault.protocolKey] ??
                 protocolsByName[
                   vault.protocol.toLowerCase().replace(/\s+/g, "-")
                 ];

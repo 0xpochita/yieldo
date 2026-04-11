@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { LifiChainMeta } from "@/lib/lifi-meta";
 import type { LifiPortfolioPosition } from "@/lib/lifi-portfolio";
+import { resolveProtocol } from "@/lib/protocol-registry";
 
 type PositionsSectionProps = {
   positions: LifiPortfolioPosition[];
@@ -113,6 +114,7 @@ export function PositionsSection({
             {positions.map((position, index) => {
               const chain = chainsById[position.chainId];
               const usd = Number.parseFloat(position.balanceUsd ?? "0");
+              const resolved = resolveProtocol(position.protocolName);
               return (
                 <motion.li
                   key={`${position.chainId}-${position.protocolName}-${position.asset.address}`}
@@ -122,12 +124,22 @@ export function PositionsSection({
                   className="flex items-center justify-between gap-4 rounded-2xl bg-surface-raised px-4 py-4"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="relative h-10 w-10 flex-shrink-0">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand">
-                        {position.protocolName.charAt(0).toUpperCase()}
+                    <div className="relative h-10 w-10 shrink-0">
+                      <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-brand-soft text-sm font-semibold text-brand">
+                        {resolved.logoPath ? (
+                          <Image
+                            src={resolved.logoPath}
+                            alt={resolved.displayName}
+                            width={40}
+                            height={40}
+                            className="h-full w-full object-contain"
+                          />
+                        ) : (
+                          resolved.displayName.charAt(0).toUpperCase()
+                        )}
                       </span>
                       {chain?.logoURI ? (
-                        <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center overflow-hidden rounded-full border-2 border-[var(--color-surface-2)] bg-[var(--color-surface-2)]">
+                        <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center overflow-hidden rounded-full border-2 border-(--color-surface-2) bg-(--color-surface-2)">
                           <Image
                             src={chain.logoURI}
                             alt={chain.name}
@@ -141,7 +153,7 @@ export function PositionsSection({
                     </div>
                     <div className="flex min-w-0 flex-col">
                       <span className="truncate text-sm font-semibold text-main">
-                        {position.protocolName}
+                        {resolved.displayName}
                       </span>
                       <span className="truncate text-[11px] text-muted">
                         {position.asset.symbol} · {chain?.name ?? `Chain ${position.chainId}`}

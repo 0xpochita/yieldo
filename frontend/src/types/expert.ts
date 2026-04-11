@@ -15,6 +15,7 @@ export type VaultRisk = "low" | "medium" | "high";
 export type VaultStrategy = {
   id: string;
   protocol: string;
+  protocolKey: string;
   protocolLogoUri?: string;
   protocolUrl?: string;
   vaultName: string;

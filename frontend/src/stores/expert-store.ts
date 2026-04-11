@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { mockChains, mockTokens } from "@/data";
 import { fetchVaultsViaProxy, type LifiVault } from "@/lib/lifi-earn";
+import { resolveProtocol } from "@/lib/protocol-registry";
 import type {
   Chain,
   Token,
@@ -65,11 +66,15 @@ function mapVault(vault: LifiVault): VaultStrategy {
       ? null
       : toNumber(vault.analytics.apy30d, 0);
   const underlying = vault.underlyingTokens?.[0];
+  const rawProtocolName = vault.protocol?.name ?? "Unknown";
+  const resolved = resolveProtocol(rawProtocolName);
+  const apiLogo = vault.protocol?.logoUri ?? vault.protocol?.logoURI;
 
   return {
     id: `${vault.chainId}:${vault.address}`,
-    protocol: vault.protocol?.name ?? "Unknown",
-    protocolLogoUri: vault.protocol?.logoUri ?? vault.protocol?.logoURI,
+    protocol: resolved.displayName,
+    protocolKey: resolved.slug,
+    protocolLogoUri: resolved.logoPath ?? apiLogo,
     protocolUrl: vault.protocol?.url,
     vaultName: vault.name,
     vaultAddress: vault.address,
