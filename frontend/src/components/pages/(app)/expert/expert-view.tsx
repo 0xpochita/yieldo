@@ -1,5 +1,6 @@
 import { DepositSheet } from "./deposit-sheet";
 import { ExpertBackground } from "./expert-background";
+import { StrategyPreview } from "./strategy-preview";
 import { StrategyReview } from "./strategy-review";
 import { SupplyCard } from "./supply-card";
 import { VaultList } from "./vault-list";
@@ -13,6 +14,7 @@ export function ExpertView() {
           <div className="flex min-h-0 flex-col gap-4">
             <SupplyCard />
             <StrategyReview />
+            <StrategyPreview />
           </div>
           <div className="flex min-h-0 flex-col">
             <VaultList />

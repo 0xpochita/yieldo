@@ -1,6 +1,6 @@
 "use client";
 
-import { FiArrowDown } from "react-icons/fi";
+import { FiChevronDown } from "react-icons/fi";
 import { useEffect, useMemo, useState } from "react";
 import { mockChains, mockTokens } from "@/data";
 import { useExpertStore, useMetaStore } from "@/stores";
@@ -194,8 +194,8 @@ export function SupplyCard() {
 
         <div className="relative mt-1 rounded-2xl bg-surface-raised p-3">
           <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl border-4 border-[var(--color-surface-1)] bg-surface-muted">
-              <FiArrowDown className="h-3.5 w-3.5 text-muted" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border-4 border-[var(--color-surface-1)] bg-brand">
+              <FiChevronDown className="h-4 w-4 text-white" />
             </div>
           </div>
 

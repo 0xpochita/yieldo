@@ -54,7 +54,7 @@ export function FeatureSections({
         {cards.map((card) => (
           <div
             key={card.id}
-            className="relative flex flex-col justify-between gap-4 overflow-hidden rounded-2xl p-3"
+            className="relative flex flex-col justify-between gap-4 overflow-hidden rounded-2xl p-6.5"
             style={{ backgroundColor: card.tint }}
           >
             <div className="flex items-center gap-3">

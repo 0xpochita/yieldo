@@ -1,6 +1,6 @@
 "use client";
 
-import { FiChevronDown } from "react-icons/fi";
+import { FiCheck, FiChevronDown } from "react-icons/fi";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -194,13 +194,15 @@ export function Selector({
                       {isActive ? (
                         <motion.span
                           layoutId={`active-dot-${label}`}
-                          className="h-2 w-2 rounded-full bg-brand"
+                          className="flex h-4 w-4 items-center justify-center rounded-full bg-brand text-white"
                           transition={{
                             type: "spring",
                             stiffness: 500,
                             damping: 30,
                           }}
-                        />
+                        >
+                          <FiCheck className="h-2.5 w-2.5" strokeWidth={3} />
+                        </motion.span>
                       ) : null}
                     </motion.button>
                   </motion.li>

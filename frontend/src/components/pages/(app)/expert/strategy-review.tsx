@@ -52,6 +52,30 @@ function formatApy(value: number): string {
   return `${value.toFixed(2)}%`;
 }
 
+function formatUsd(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "$0.00";
+  if (value >= 1_000_000)
+    return `$${(value / 1_000_000).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}M`;
+  if (value >= 10_000)
+    return `$${value.toLocaleString("en-US", {
+      maximumFractionDigits: 0,
+    })}`;
+  return `$${value.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+const PREVIEW_PERIODS: { key: string; label: string; divisor: number }[] = [
+  { key: "year", label: "1Y", divisor: 1 },
+  { key: "month", label: "1M", divisor: 12 },
+  { key: "week", label: "1W", divisor: 52 },
+  { key: "day", label: "1D", divisor: 365 },
+];
+
 function formatTimelock(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds <= 0) return "None";
   const days = seconds / 86_400;
@@ -74,8 +98,15 @@ export function StrategyReview() {
   const amount = useExpertStore((state) => state.amount);
   const chainsById = useMetaStore((state) => state.chainsById);
 
+  const token = useExpertStore((state) => state.token);
+  const chain = useExpertStore((state) => state.chain);
+  const tokensBySymbol = useMetaStore((state) => state.tokensBySymbol);
+
   const parsedAmount = Number.parseFloat(amount || "0");
   const hasValidAmount = Number.isFinite(parsedAmount) && parsedAmount > 0;
+  const principalUsd = hasValidAmount ? parsedAmount * token.usdPrice : 0;
+  const tokenLogo =
+    tokensBySymbol[chain.id]?.[token.symbol.toUpperCase()]?.logoURI ?? null;
 
   const vault = useMemo(
     () => vaults.find((item) => item.id === selectedVaultId) ?? null,
@@ -114,6 +145,9 @@ export function StrategyReview() {
             key={vault.id}
             vault={vault}
             chainLogo={chainsById[vault.chainId]?.logoURI}
+            principalUsd={principalUsd}
+            tokenLogo={tokenLogo}
+            tokenSymbol={token.symbol}
           />
         ) : (
           <EmptyReview key="empty" isLoading={isLoading} />
@@ -147,9 +181,15 @@ function EmptyReview({ isLoading }: { isLoading: boolean }) {
 function ActiveReview({
   vault,
   chainLogo,
+  principalUsd,
+  tokenLogo,
+  tokenSymbol,
 }: {
   vault: VaultStrategy;
   chainLogo?: string;
+  principalUsd: number;
+  tokenLogo: string | null;
+  tokenSymbol: string;
 }) {
   const [copied, setCopied] = useState(false);
   const link = explorerUrl(vault);
@@ -258,6 +298,50 @@ function ActiveReview({
         ))}
       </div>
 
+      <div className="rounded-2xl bg-surface-raised p-3">
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-1.5 text-[10px] tracking-wide text-faint">
+            {tokenLogo ? (
+              <Image
+                src={tokenLogo}
+                alt={tokenSymbol}
+                width={14}
+                height={14}
+                className="h-3.5 w-3.5 rounded-full object-contain"
+                unoptimized
+              />
+            ) : null}
+            Your Estimated Balance
+          </span>
+          <span className="text-[10px] font-semibold text-brand">
+            {formatApy(vault.apy)} APY
+          </span>
+        </div>
+        <div className="mt-2 grid grid-cols-4 gap-1.5">
+          {PREVIEW_PERIODS.map((period) => {
+            const yieldForPeriod =
+              (principalUsd * (vault.apy / 100)) / period.divisor;
+            const projected = principalUsd + yieldForPeriod;
+            return (
+              <div
+                key={period.key}
+                className="flex flex-col items-start gap-0.5 rounded-xl bg-surface-muted px-2 py-1.5"
+              >
+                <span className="text-[9px] font-semibold uppercase tracking-wide text-faint">
+                  {period.label}
+                </span>
+                <span className="truncate text-[11px] font-semibold text-main">
+                  {formatUsd(projected)}
+                </span>
+                <span className="truncate text-[9px] text-(--color-positive)">
+                  +{formatUsd(yieldForPeriod)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+{/* 
       <div className="mt-auto flex items-center justify-between gap-2 rounded-2xl bg-surface-raised px-3 py-2">
         <div className="flex min-w-0 flex-col">
           <span className="text-[10px] uppercase tracking-wide text-faint">
@@ -279,7 +363,7 @@ function ActiveReview({
             <FiCopy className="h-3.5 w-3.5" />
           )}
         </button>
-      </div>
+      </div> */}
     </motion.div>
   );
 }
