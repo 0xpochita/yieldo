@@ -9,6 +9,8 @@ import { HiOutlineShieldCheck } from "react-icons/hi2";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useEffect, useMemo, useRef } from "react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount } from "wagmi";
 import { useDepositStore, useExpertStore, useMetaStore } from "@/stores";
 import { IdleAggregatorCard } from "../idle-aggregator-card";
 import {
@@ -60,6 +62,7 @@ export function VaultList() {
   const chainsById = useMetaStore((state) => state.chainsById);
   const protocolsByName = useMetaStore((state) => state.protocolsByName);
   const loadMeta = useMetaStore((state) => state.loadMeta);
+  const { isConnected } = useAccount();
 
   useEffect(() => {
     loadMeta();
@@ -182,6 +185,7 @@ export function VaultList() {
 
   const hasValidAmount = amountIsValid;
   const depositDisabled =
+    !isConnected ||
     !hasData ||
     !selectedVault ||
     !selectedVault.isTransactional ||
@@ -497,18 +501,33 @@ export function VaultList() {
       </div>
 
       <div className="mt-3 px-1 pb-1">
-        <button
-          type="button"
-          onClick={handleDepositClick}
-          disabled={depositDisabled}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white cursor-pointer transition-all duration-200 ease-in-out hover-brand active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {!hasValidAmount
-            ? "Enter an amount to continue"
-            : selectedVault && !selectedVault.isTransactional
-              ? "Selected vault not supported"
-              : "Review deposit"}
-        </button>
+        {!isConnected ? (
+          <ConnectButton.Custom>
+            {({ openConnectModal, mounted }) => (
+              <button
+                type="button"
+                disabled={!mounted}
+                onClick={openConnectModal}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white cursor-pointer transition-all duration-200 ease-in-out hover-brand active:scale-[0.98] disabled:opacity-50"
+              >
+                Connect wallet
+              </button>
+            )}
+          </ConnectButton.Custom>
+        ) : (
+          <button
+            type="button"
+            onClick={handleDepositClick}
+            disabled={depositDisabled}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white cursor-pointer transition-all duration-200 ease-in-out hover-brand active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {!hasValidAmount
+              ? "Enter an amount to continue"
+              : selectedVault && !selectedVault.isTransactional
+                ? "Selected vault not supported"
+                : "Review deposit"}
+          </button>
+        )}
       </div>
 
       <div className="mt-3 flex items-center justify-center gap-2 pb-1">
