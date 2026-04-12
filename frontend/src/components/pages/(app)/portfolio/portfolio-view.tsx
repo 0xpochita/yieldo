@@ -71,6 +71,7 @@ function ConnectedPortfolio({ address }: { address: `0x${string}` }) {
   const totalPositionsUsd = usePortfolioStore(
     (state) => state.totalPositionsUsd,
   );
+  const pendingRefetch = usePortfolioStore((state) => state.pendingRefetch);
 
   useEffect(() => {
     loadMeta();
@@ -95,6 +96,18 @@ function ConnectedPortfolio({ address }: { address: `0x${string}` }) {
     tokensByChain,
     loadPortfolio,
   ]);
+
+  useEffect(() => {
+    if (!pendingRefetch || metaStatus !== "ready" || !address) return;
+    const timer = setTimeout(() => {
+      loadPortfolio({
+        config,
+        address,
+        meta: { chainsById, tokensByChain },
+      });
+    }, 15_000);
+    return () => clearTimeout(timer);
+  }, [pendingRefetch, metaStatus, address, config, chainsById, tokensByChain, loadPortfolio]);
 
   const filteredHoldings = useMemo(() => {
     if (networkFilter === "all") return holdings;

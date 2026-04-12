@@ -21,7 +21,9 @@ type PortfolioState = {
   error: string | null;
   lastFetchedAddress: string | null;
   networkFilter: number | "all";
+  pendingRefetch: boolean;
   setNetworkFilter: (filter: number | "all") => void;
+  markForRefetch: () => void;
   loadPortfolio: (args: {
     config: Config;
     address: `0x${string}`;
@@ -45,7 +47,9 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   error: null,
   lastFetchedAddress: null,
   networkFilter: "all",
+  pendingRefetch: false,
   setNetworkFilter: (networkFilter) => set({ networkFilter }),
+  markForRefetch: () => set({ pendingRefetch: true, lastFetchedAddress: null }),
   loadPortfolio: async ({ config, address, meta }) => {
     if (!Object.keys(meta.chainsById).length) return;
 
@@ -67,6 +71,7 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
         status: "ready",
         error: null,
         lastFetchedAddress: address,
+        pendingRefetch: false,
       });
     } catch (error) {
       if ((error as Error).name === "AbortError") return;
@@ -87,5 +92,6 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
       error: null,
       lastFetchedAddress: null,
       networkFilter: "all",
+      pendingRefetch: false,
     }),
 }));

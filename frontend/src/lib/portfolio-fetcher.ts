@@ -6,6 +6,7 @@ import {
   fetchPortfolioViaProxy,
   type LifiPortfolioPosition,
 } from "@/lib/lifi-portfolio";
+import { getTrackedVaults } from "@/lib/tracked-vaults";
 
 const NATIVE_PLACEHOLDERS = new Set([
   "0x0000000000000000000000000000000000000000",
@@ -28,6 +29,16 @@ const BALANCE_OF_ABI = [
     stateMutability: "view",
     inputs: [{ name: "owner", type: "address" }],
     outputs: [{ type: "uint256" }],
+  },
+] as const;
+
+const DECIMALS_ABI = [
+  {
+    name: "decimals",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint8" }],
   },
 ] as const;
 
@@ -196,6 +207,19 @@ export async function loadPortfolioSnapshot({
     positions = [];
   }
 
+  const onChainPositions = await loadTrackedVaultPositions(config, address);
+  if (onChainPositions.length > 0) {
+    const lifiKeys = new Set(
+      positions.map((p) => `${p.chainId}-${p.protocolName}`),
+    );
+    for (const op of onChainPositions) {
+      const key = `${op.chainId}-${op.protocolName}`;
+      if (!lifiKeys.has(key)) {
+        positions.push(op);
+      }
+    }
+  }
+
   const holdings = chainResults
     .flat()
     .sort((a, b) => b.valueUsd - a.valueUsd);
@@ -217,3 +241,75 @@ export async function loadPortfolioSnapshot({
     totalPositionsUsd,
   };
 }
+
+async function loadTrackedVaultPositions(
+  config: Config,
+  address: `0x${string}`,
+): Promise<LifiPortfolioPosition[]> {
+  const tracked = getTrackedVaults();
+  if (tracked.length === 0) return [];
+
+  const byChain = new Map<number, typeof tracked>();
+  for (const vault of tracked) {
+    const list = byChain.get(vault.chainId) ?? [];
+    list.push(vault);
+    byChain.set(vault.chainId, list);
+  }
+
+  const results: LifiPortfolioPosition[] = [];
+
+  for (const [chainId, vaults] of byChain) {
+    try {
+      const contracts = vaults.flatMap((v) => [
+        {
+          address: v.vaultAddress as `0x${string}`,
+          abi: BALANCE_OF_ABI,
+          functionName: "balanceOf" as const,
+          args: [address],
+        },
+        {
+          address: v.vaultAddress as `0x${string}`,
+          abi: DECIMALS_ABI,
+          functionName: "decimals" as const,
+        },
+      ]);
+
+      const raw = await multicall(config, {
+        chainId,
+        allowFailure: true,
+        contracts,
+      });
+
+      vaults.forEach((vault, index) => {
+        const balResult = raw[index * 2];
+        const decResult = raw[index * 2 + 1];
+        if (!balResult || balResult.status !== "success") return;
+        if (!decResult || decResult.status !== "success") return;
+
+        const balance = balResult.result as bigint;
+        if (balance === 0n) return;
+
+        const decimals = Number(decResult.result);
+        const amount = Number(formatUnits(balance, decimals));
+
+        results.push({
+          chainId: vault.chainId,
+          protocolName: vault.protocolName,
+          asset: {
+            address: vault.vaultAddress,
+            name: vault.vaultName,
+            symbol: vault.tokenSymbol,
+            decimals,
+          },
+          balanceNative: amount.toFixed(Math.min(decimals, 8)),
+          balanceUsd: (amount * 1).toFixed(6),
+        });
+      });
+    } catch {
+      // chain multicall failed
+    }
+  }
+
+  return results;
+}
+

@@ -24,3 +24,21 @@ export function formatBalance(
 }
 
 export const SKELETON_ROWS = [0, 1, 2];
+
+const BLOCK_EXPLORERS: Record<number, string> = {
+  1: "https://etherscan.io/address",
+  10: "https://optimistic.etherscan.io/address",
+  137: "https://polygonscan.com/address",
+  146: "https://sonicscan.org/address",
+  8453: "https://basescan.org/address",
+  42161: "https://arbiscan.io/address",
+};
+
+export function resolveExplorerUrl(
+  chainId: number,
+  tokenAddress: string,
+): string | null {
+  const base = BLOCK_EXPLORERS[chainId];
+  if (!base || !tokenAddress) return null;
+  return `${base}/${tokenAddress}`;
+}

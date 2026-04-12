@@ -1,15 +1,15 @@
 "use client";
 
-import { FiArrowUpRight } from "react-icons/fi";
+import { FiArrowUpRight, FiExternalLink } from "react-icons/fi";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import type { LifiChainMeta } from "@/lib/lifi-meta";
 import type { LifiPortfolioPosition } from "@/lib/lifi-portfolio";
-import { resolveProtocol } from "@/lib/protocol-registry";
+import { resolvePositionUrl, resolveProtocol } from "@/lib/protocol-registry";
 import { useWithdrawStore } from "@/stores";
-import { formatBalance, formatUsd, SKELETON_ROWS } from "./positions-section-utils";
+import { formatBalance, formatUsd, resolveExplorerUrl, SKELETON_ROWS } from "./positions-section-utils";
 
 type PositionsSectionProps = {
   positions: LifiPortfolioPosition[];
@@ -92,15 +92,13 @@ export function PositionsSection({
               const resolved = resolveProtocol(position.protocolName);
               return (
                 <motion.li
-                  key={`${position.chainId}-${position.protocolName}-${position.asset.address}`}
+                  key={`${position.chainId}-${position.protocolName}-${position.asset.address}-${index}`}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.04, duration: 0.25 }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => openWithdrawSheet(position)}
-                    className="flex w-full items-center justify-between gap-4 rounded-2xl bg-surface-raised px-4 py-4 text-left cursor-pointer transition-colors hover:bg-surface-muted"
+                  <div
+                    className="flex w-full items-center justify-between gap-4 rounded-2xl bg-surface-raised px-4 py-4"
                   >
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="relative h-10 w-10 shrink-0">
@@ -131,8 +129,28 @@ export function PositionsSection({
                       ) : null}
                     </div>
                     <div className="flex min-w-0 flex-col">
-                      <span className="truncate text-sm font-semibold text-main">
-                        {resolved.displayName}
+                      <span className="flex items-center gap-1.5">
+                        <span className="truncate text-sm font-semibold text-main">
+                          {resolved.displayName}
+                        </span>
+                        {(() => {
+                          const url =
+                            resolvePositionUrl(position.protocolName, position.chainId, position.asset.address) ??
+                            resolveExplorerUrl(position.chainId, position.asset.address);
+                          if (!url) return null;
+                          return (
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={`Open ${resolved.displayName} position`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex text-faint transition-colors hover:text-main"
+                            >
+                              <FiExternalLink className="h-3 w-3" />
+                            </a>
+                          );
+                        })()}
                       </span>
                       <span className="truncate text-[11px] text-muted">
                         {position.asset.symbol} · {chain?.name ?? `Chain ${position.chainId}`}
@@ -153,12 +171,16 @@ export function PositionsSection({
                         )}
                       </span>
                     </div>
-                    <span className="flex h-7 items-center gap-1 rounded-full bg-brand px-3 text-[10px] font-semibold text-white transition-colors hover:bg-brand-hover">
+                    <button
+                      type="button"
+                      onClick={() => openWithdrawSheet(position)}
+                      className="flex h-7 items-center gap-1 rounded-full bg-brand px-3 text-[10px] font-semibold text-white cursor-pointer transition-colors hover:bg-brand-hover"
+                    >
                       Withdraw
                       <FiArrowUpRight className="h-3 w-3" />
-                    </span>
+                    </button>
                   </div>
-                  </button>
+                  </div>
                 </motion.li>
               );
             })}

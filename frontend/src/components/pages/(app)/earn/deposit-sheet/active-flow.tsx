@@ -23,7 +23,8 @@ import {
   useSendTransaction,
   useSwitchChain,
 } from "wagmi";
-import { useDepositStore, useMetaStore } from "@/stores";
+import { useDepositStore, useMetaStore, usePortfolioStore } from "@/stores";
+import { addTrackedVault } from "@/lib/tracked-vaults";
 import {
   ERC20_ABI,
   NATIVE_TOKEN_ADDRESSES,
@@ -43,6 +44,7 @@ export function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) 
   const error = useDepositStore((state) => state.error);
   const txHash = useDepositStore((state) => state.txHash);
   const fromTokenAddress = useDepositStore((state) => state.fromTokenAddress);
+  const markForRefetch = usePortfolioStore((state) => state.markForRefetch);
   const fetchQuote = useDepositStore((state) => state.fetchQuote);
   const setStep = useDepositStore((state) => state.setStep);
   const setError = useDepositStore((state) => state.setError);
@@ -57,11 +59,14 @@ export function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) 
   const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync } = useSendTransaction();
 
+  const setAmount = useDepositStore((state) => state.setAmount);
+  const hasAmount = amount.trim() !== "" && Number.parseFloat(amount) > 0;
+
   useEffect(() => {
-    if (!quote && step === "idle") {
+    if (!quote && step === "idle" && hasAmount) {
       fetchQuote(walletAddress);
     }
-  }, [quote, step, fetchQuote, walletAddress]);
+  }, [quote, step, hasAmount, fetchQuote, walletAddress]);
 
   const isCrossChain = chain.id !== vault.chainId;
   const tokenLogo =
@@ -121,6 +126,17 @@ export function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) 
       });
       setTxHash(hash);
       setStep("success");
+
+      addTrackedVault({
+        chainId: vault.chainId,
+        vaultAddress: vault.vaultAddress,
+        protocolName: vault.protocolKey,
+        tokenSymbol: vault.tokenSymbol,
+        tokenDecimals: vault.tokenDecimals,
+        vaultName: vault.vaultName,
+      });
+
+      markForRefetch();
     } catch (err) {
       const raw = (err as Error).message || "Transaction failed";
       const firstLine = raw.split("\n")[0];
@@ -130,6 +146,66 @@ export function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) 
       setError(clean);
       setStep("error");
     }
+  }
+
+  if (!hasAmount) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="rounded-2xl bg-surface-raised p-4">
+          <div className="flex items-center gap-3">
+            {vault.protocolLogoUri ? (
+              <Image
+                src={vault.protocolLogoUri}
+                alt={vault.protocol}
+                width={36}
+                height={36}
+                className="h-9 w-9 rounded-full object-contain"
+                unoptimized
+              />
+            ) : (
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand">
+                {vault.protocol.charAt(0).toUpperCase()}
+              </span>
+            )}
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-semibold text-main">
+                {vault.protocol}
+              </span>
+              <span className="truncate text-[11px] text-muted">
+                {vault.tokenSymbol} · {vault.chainShortName}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl bg-surface-raised p-4">
+          <span className="text-xs font-medium text-muted">Amount to supply</span>
+          <div className="mt-2 flex items-center gap-3">
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="0"
+              value={amount}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "" || /^\d*\.?\d*$/.test(v)) setAmount(v);
+              }}
+              className="w-full bg-transparent text-[28px] font-medium leading-none tracking-tight text-main outline-none placeholder:text-faint"
+              autoFocus
+            />
+            <span className="shrink-0 text-sm font-semibold text-muted">
+              {token.symbol}
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          disabled
+          className="flex w-full items-center justify-center rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Enter an amount
+        </button>
+      </div>
+    );
   }
 
   if (step === "quoting") {
@@ -174,15 +250,28 @@ export function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) 
           initial={{ scale: 0, rotate: -30 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: "spring", stiffness: 340, damping: 18 }}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-soft"
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-[rgba(64,182,107,0.15)]"
         >
-          <FiCheck className="h-7 w-7 text-brand" />
+          <FiCheck className="h-7 w-7 text-(--color-positive)" />
         </motion.div>
         <div>
           <p className="text-base font-semibold text-main">Deposit submitted</p>
           <p className="mx-auto mt-1 max-w-xs text-xs text-muted">
-            Your funds will be earning in {vault.protocol} shortly. You can
-            track the transaction below.
+            Your funds will be earning in{" "}
+            <span className="inline-flex items-baseline gap-1 align-baseline font-semibold text-main">
+              {vault.protocolLogoUri ? (
+                <Image
+                  src={vault.protocolLogoUri}
+                  alt={vault.protocol}
+                  width={14}
+                  height={14}
+                  className="inline-block h-3.5 w-3.5 translate-y-[2px] rounded-full object-contain"
+                  unoptimized
+                />
+              ) : null}
+              {vault.protocol}
+            </span>{" "}
+            shortly. You can track the transaction below.
           </p>
         </div>
         {txHash ? (
@@ -190,7 +279,7 @@ export function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) 
             href={`https://scan.li.fi/tx/${txHash}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs font-semibold text-brand underline"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-(--color-positive) transition-opacity hover:opacity-80"
           >
             View on LI.FI Scan
             <FiExternalLink className="h-3 w-3" />
@@ -199,7 +288,7 @@ export function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) 
         <button
           type="button"
           onClick={closeSheet}
-          className="mt-2 cursor-pointer rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white transition-colors hover-brand"
+          className="mt-2 cursor-pointer rounded-full bg-(--color-positive) px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           Done
         </button>

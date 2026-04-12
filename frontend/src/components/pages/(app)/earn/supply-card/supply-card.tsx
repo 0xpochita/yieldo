@@ -2,7 +2,10 @@
 
 import { FiChevronDown } from "react-icons/fi";
 import { useEffect, useMemo, useState } from "react";
+import { useAccount, useReadContract } from "wagmi";
+import { erc20Abi, formatUnits } from "viem";
 import { mockChains, mockTokens } from "@/data";
+import { useWalletReady } from "@/lib/wallet-ready";
 import { useExpertStore, useMetaStore } from "@/stores";
 import { Selector } from "../selector";
 import { type YieldPeriod, TOKEN_LOGO_FALLBACKS, YIELD_PERIODS } from "./constants";
@@ -129,7 +132,11 @@ export function SupplyCard() {
           </div>
           <div className="mt-2 flex items-center justify-between text-xs">
             <span className="text-muted">${formatUsd(usdValue)}</span>
-            <span className="text-muted">Balance 0.00 {token.symbol}</span>
+            <TokenBalance
+              chainId={chain.id}
+              tokenSymbol={token.symbol}
+              onMax={setAmount}
+            />
           </div>
         </div>
 
@@ -188,5 +195,87 @@ export function SupplyCard() {
         </div>
       </div>
     </section>
+  );
+}
+
+function TokenBalance({
+  chainId,
+  tokenSymbol,
+  onMax,
+}: {
+  chainId: number;
+  tokenSymbol: string;
+  onMax: (value: string) => void;
+}) {
+  const walletReady = useWalletReady();
+  if (!walletReady) {
+    return <span className="text-muted">Balance 0.00 {tokenSymbol}</span>;
+  }
+  return (
+    <TokenBalanceInner
+      chainId={chainId}
+      tokenSymbol={tokenSymbol}
+      onMax={onMax}
+    />
+  );
+}
+
+function TokenBalanceInner({
+  chainId,
+  tokenSymbol,
+  onMax,
+}: {
+  chainId: number;
+  tokenSymbol: string;
+  onMax: (value: string) => void;
+}) {
+  const { address, isConnected } = useAccount();
+  const tokensBySymbol = useMetaStore((state) => state.tokensBySymbol);
+  const tokenMeta = tokensBySymbol[chainId]?.[tokenSymbol.toUpperCase()];
+
+  const { data: balanceData } = useReadContract({
+    address: tokenMeta?.address as `0x${string}` | undefined,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+    chainId,
+    query: {
+      enabled: isConnected && !!address && !!tokenMeta?.address,
+      refetchInterval: 15_000,
+    },
+  });
+
+  if (!isConnected || !tokenMeta) {
+    return <span className="text-muted">Balance 0.00 {tokenSymbol}</span>;
+  }
+
+  const raw = balanceData as bigint | undefined;
+  if (raw === undefined) {
+    return <span className="text-muted">Balance — {tokenSymbol}</span>;
+  }
+
+  const amount = Number(formatUnits(raw, tokenMeta.decimals));
+  const fullAmount = formatUnits(raw, tokenMeta.decimals);
+  const display =
+    amount < 0.0001 && amount > 0
+      ? "< 0.0001"
+      : amount.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 4,
+        });
+
+  return (
+    <span className="flex items-center gap-1.5 text-muted">
+      Balance {display} {tokenSymbol}
+      {amount > 0 ? (
+        <button
+          type="button"
+          onClick={() => onMax(fullAmount)}
+          className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-white/90 bg-brand cursor-pointer transition-colors hover:bg-brand hover:text-white"
+        >
+          MAX
+        </button>
+      ) : null}
+    </span>
   );
 }
