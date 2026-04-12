@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { ExpertView } from "@/components/pages/(app)";
+import { EarnView } from "@/components/pages/(app)";
 
 export const metadata: Metadata = {
   title: "Yieldo | Earn",
 };
 
-export default function ExpertPage() {
-  return <ExpertView />;
+export default function EarnPage() {
+  return <EarnView />;
 }

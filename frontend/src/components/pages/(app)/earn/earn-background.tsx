@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-export function ExpertBackground() {
+export function EarnBackground() {
   return (
     <div
       aria-hidden

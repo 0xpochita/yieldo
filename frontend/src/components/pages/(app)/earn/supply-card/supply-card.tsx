@@ -4,68 +4,9 @@ import { FiChevronDown } from "react-icons/fi";
 import { useEffect, useMemo, useState } from "react";
 import { mockChains, mockTokens } from "@/data";
 import { useExpertStore, useMetaStore } from "@/stores";
-import { Selector } from "./selector";
-
-type YieldPeriod = "year" | "month" | "week" | "day";
-
-const TOKEN_LOGO_FALLBACKS: Record<string, string> = {
-  USDT: "/Assets/Images/Logo-Coin/usdt-logo.svg",
-};
-
-const YIELD_PERIODS: {
-  key: YieldPeriod;
-  label: string;
-  divisor: number;
-  suffix: string;
-  title: string;
-  hintLabel: string;
-  hintDivisor: number;
-}[] = [
-  {
-    key: "year",
-    label: "1Y",
-    divisor: 1,
-    suffix: "/ year",
-    title: "Estimated yearly yield",
-    hintLabel: "month",
-    hintDivisor: 12,
-  },
-  {
-    key: "month",
-    label: "1M",
-    divisor: 12,
-    suffix: "/ month",
-    title: "Estimated monthly yield",
-    hintLabel: "day",
-    hintDivisor: 12 * 30,
-  },
-  {
-    key: "week",
-    label: "1W",
-    divisor: 52,
-    suffix: "/ week",
-    title: "Estimated weekly yield",
-    hintLabel: "day",
-    hintDivisor: 52 * 7,
-  },
-  {
-    key: "day",
-    label: "1D",
-    divisor: 365,
-    suffix: "/ day",
-    title: "Estimated daily yield",
-    hintLabel: "hour",
-    hintDivisor: 365 * 24,
-  },
-];
-
-function formatUsd(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "0.00";
-  return value.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
+import { Selector } from "../selector";
+import { type YieldPeriod, TOKEN_LOGO_FALLBACKS, YIELD_PERIODS } from "./constants";
+import { formatUsd } from "./utils";
 
 export function SupplyCard() {
   const token = useExpertStore((state) => state.token);
@@ -194,7 +135,7 @@ export function SupplyCard() {
 
         <div className="relative mt-1 rounded-2xl bg-surface-raised p-3">
           <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border-4 border-[var(--color-surface-1)] bg-brand">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border-4 border-(--color-surface-1) bg-brand">
               <FiChevronDown className="h-4 w-4 text-white" />
             </div>
           </div>

@@ -2,57 +2,9 @@
 
 import { FiCheck, FiChevronDown } from "react-icons/fi";
 import { AnimatePresence, motion } from "motion/react";
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-
-type SelectorOption = {
-  key: string;
-  label: string;
-  hint?: string;
-  iconUrl?: string;
-};
-
-type SelectorProps = {
-  label: string;
-  value: string;
-  options: SelectorOption[];
-  onSelect: (key: string) => void;
-  variant?: "chip" | "pill";
-};
-
-function OptionIcon({
-  option,
-  size,
-}: {
-  option: SelectorOption;
-  size: number;
-}) {
-  if (option.iconUrl) {
-    return (
-      <span
-        className="relative overflow-hidden rounded-full bg-surface-muted"
-        style={{ width: size, height: size }}
-      >
-        <Image
-          src={option.iconUrl}
-          alt=""
-          fill
-          sizes={`${size}px`}
-          className="object-contain"
-          unoptimized
-        />
-      </span>
-    );
-  }
-  return (
-    <span
-      className="flex items-center justify-center rounded-full bg-brand text-[11px] font-semibold text-white"
-      style={{ width: size, height: size }}
-    >
-      {option.label.charAt(0)}
-    </span>
-  );
-}
+import type { SelectorProps } from "./option-icon";
+import { OptionIcon } from "./option-icon";
 
 export function Selector({
   label,
@@ -150,7 +102,7 @@ export function Selector({
                   },
                 },
               }}
-              className="divide-y divide-[var(--color-line)]"
+              className="divide-y divide-(--color-line)"
             >
               {options.map((option) => {
                 const isActive = option.key === active.key;

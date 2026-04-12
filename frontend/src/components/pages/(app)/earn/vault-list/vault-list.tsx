@@ -1,545 +1,35 @@
 "use client";
 
 import {
-  FiAlertTriangle,
   FiCheck,
-  FiChevronDown,
   FiClock,
   FiExternalLink,
-  FiInbox,
 } from "react-icons/fi";
 import { HiOutlineShieldCheck } from "react-icons/hi2";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { VaultRiskFilter } from "@/stores";
+import { useEffect, useMemo, useRef } from "react";
 import { useDepositStore, useExpertStore, useMetaStore } from "@/stores";
-import type { VaultRisk, VaultSortKey, VaultStrategy } from "@/types";
-import { IdleAggregatorCard } from "./idle-aggregator-card";
-
-const RISK_FILTERS: { key: VaultRiskFilter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "low", label: "Low" },
-  { key: "medium", label: "Medium" },
-  { key: "high", label: "High" },
-];
-
-type ProtocolOption = {
-  key: string;
-  label: string;
-  logo?: string;
-  count: number;
-};
-
-function ProtocolFilterDropdown({
-  active,
-  options,
-  onSelect,
-}: {
-  active: ProtocolOption | null;
-  options: ProtocolOption[];
-  onSelect: (key: string | null) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function handleClick(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  const total = options.reduce((sum, option) => sum + option.count, 0);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="flex items-center gap-1.5 rounded-full bg-surface-raised px-3 py-1.5 text-xs font-semibold text-main cursor-pointer transition-colors hover:bg-surface-muted"
-      >
-        {active?.logo ? (
-          <Image
-            src={active.logo}
-            alt={active.label}
-            width={14}
-            height={14}
-            className="h-3.5 w-3.5 rounded-full object-contain"
-            unoptimized
-          />
-        ) : null}
-        <span className="max-w-28 truncate">
-          {active ? active.label : "Protocol"}
-        </span>
-        <FiChevronDown
-          className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-      <AnimatePresence>
-        {open ? (
-          <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 top-[calc(100%+6px)] z-20 flex max-h-64 w-56 flex-col overflow-y-auto rounded-2xl border border-main bg-surface-raised p-1 shadow-[0_16px_40px_rgba(0,0,0,0.45)]"
-          >
-            <button
-              type="button"
-              onClick={() => {
-                onSelect(null);
-                setOpen(false);
-              }}
-              className={
-                !active
-                  ? "flex items-center justify-between gap-2 rounded-xl bg-surface-muted px-3 py-2 text-left text-xs font-semibold text-main cursor-pointer"
-                  : "flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-muted cursor-pointer hover:bg-surface-muted hover:text-main"
-              }
-            >
-              <span>All protocols</span>
-              <span className="text-[10px] text-faint">{total}</span>
-            </button>
-            {options.map((option) => {
-              const isActive = active?.key === option.key;
-              return (
-                <button
-                  key={option.key}
-                  type="button"
-                  onClick={() => {
-                    onSelect(option.key);
-                    setOpen(false);
-                  }}
-                  className={
-                    isActive
-                      ? "flex items-center justify-between gap-2 rounded-xl bg-surface-muted px-3 py-2 text-left text-xs font-semibold text-main cursor-pointer"
-                      : "flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-muted cursor-pointer hover:bg-surface-muted hover:text-main"
-                  }
-                >
-                  <span className="flex min-w-0 items-center gap-2">
-                    {option.logo ? (
-                      <Image
-                        src={option.logo}
-                        alt={option.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4 shrink-0 rounded-full object-contain"
-                        unoptimized
-                      />
-                    ) : null}
-                    <span className="truncate">{option.label}</span>
-                  </span>
-                  <span className="text-[10px] text-faint">{option.count}</span>
-                </button>
-              );
-            })}
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function RiskFilterChips({
-  active,
-  counts,
-  onSelect,
-}: {
-  active: VaultRiskFilter;
-  counts: Record<VaultRisk, number>;
-  onSelect: (filter: VaultRiskFilter) => void;
-}) {
-  const total = counts.low + counts.medium + counts.high;
-  return (
-    <div className="flex items-center gap-1 rounded-full bg-surface-raised p-1">
-      {RISK_FILTERS.map((option) => {
-        const isActive = option.key === active;
-        const count =
-          option.key === "all" ? total : (counts[option.key as VaultRisk] ?? 0);
-        return (
-          <button
-            key={option.key}
-            type="button"
-            onClick={() => onSelect(option.key)}
-            className={
-              isActive
-                ? "flex items-center gap-1 rounded-full bg-surface-muted px-2.5 py-1 text-[10px] font-semibold text-main cursor-pointer transition-colors"
-                : "flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-medium text-muted cursor-pointer transition-colors hover:text-main"
-            }
-          >
-            {option.label}
-            <span className="text-[9px] text-faint">{count}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-type ThresholdPreset = { label: string; value: number };
-
-function formatThreshold(
-  value: number | null,
-  kind: "apy" | "tvl",
-): string | null {
-  if (value === null) return null;
-  if (kind === "apy") return `${value}%`;
-  if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(0)}B`;
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(0)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(0)}K`;
-  return value.toString();
-}
-
-function parseCustomThreshold(raw: string, kind: "apy" | "tvl"): number | null {
-  const cleaned = raw.trim().replace(/[>$%,\s]/g, "");
-  if (!cleaned) return null;
-  const match = cleaned.match(/^([0-9]*\.?[0-9]+)([kmb])?$/i);
-  if (!match) return null;
-  let amount = Number.parseFloat(match[1]);
-  const suffix = match[2]?.toLowerCase();
-  if (kind === "tvl") {
-    if (suffix === "k") amount *= 1_000;
-    else if (suffix === "m") amount *= 1_000_000;
-    else if (suffix === "b") amount *= 1_000_000_000;
-  }
-  if (!Number.isFinite(amount) || amount < 0) return null;
-  return amount;
-}
-
-function MinThresholdDropdown({
-  label,
-  kind,
-  presets,
-  placeholder,
-  active,
-  onSelect,
-}: {
-  label: string;
-  kind: "apy" | "tvl";
-  presets: ThresholdPreset[];
-  placeholder: string;
-  active: number | null;
-  onSelect: (value: number | null) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [customValue, setCustomValue] = useState("");
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function handleClick(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  const activeLabel = formatThreshold(active, kind);
-
-  function handleCustomSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    const parsed = parseCustomThreshold(customValue, kind);
-    if (parsed === null) return;
-    onSelect(parsed);
-    setCustomValue("");
-    setOpen(false);
-  }
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="flex items-center gap-1.5 rounded-full bg-surface-raised px-3 py-1.5 text-xs font-semibold text-main cursor-pointer transition-colors hover:bg-surface-muted"
-      >
-        <span className="text-[10px] font-medium uppercase tracking-wide text-faint">
-          {label}
-        </span>
-        <span>{activeLabel ? `>${activeLabel}` : "Any"}</span>
-        <FiChevronDown
-          className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-      <AnimatePresence>
-        {open ? (
-          <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 top-[calc(100%+6px)] z-20 flex w-52 flex-col gap-1 overflow-hidden rounded-2xl border border-main bg-surface-raised p-2 shadow-[0_16px_40px_rgba(0,0,0,0.45)]"
-          >
-            <button
-              type="button"
-              onClick={() => {
-                onSelect(null);
-                setOpen(false);
-              }}
-              className={
-                active === null
-                  ? "flex items-center justify-between gap-2 rounded-xl bg-surface-muted px-3 py-2 text-left text-xs font-semibold text-main cursor-pointer"
-                  : "flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-muted cursor-pointer hover:bg-surface-muted hover:text-main"
-              }
-            >
-              <span>Any {label.toLowerCase()}</span>
-              {active === null ? <FiCheck className="h-3 w-3" /> : null}
-            </button>
-            {presets.map((preset) => {
-              const isActive = active === preset.value;
-              return (
-                <button
-                  key={preset.label}
-                  type="button"
-                  onClick={() => {
-                    onSelect(preset.value);
-                    setOpen(false);
-                  }}
-                  className={
-                    isActive
-                      ? "flex items-center justify-between gap-2 rounded-xl bg-surface-muted px-3 py-2 text-left text-xs font-semibold text-main cursor-pointer"
-                      : "flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-muted cursor-pointer hover:bg-surface-muted hover:text-main"
-                  }
-                >
-                  <span>{preset.label}</span>
-                  {isActive ? <FiCheck className="h-3 w-3" /> : null}
-                </button>
-              );
-            })}
-            <form
-              onSubmit={handleCustomSubmit}
-              className="mt-1 flex items-center gap-1 rounded-xl border border-main bg-surface px-2 py-1.5"
-            >
-              <span className="text-[11px] font-semibold text-faint">
-                &gt;
-              </span>
-              <input
-                type="text"
-                value={customValue}
-                onChange={(event) => setCustomValue(event.target.value)}
-                placeholder={placeholder}
-                className="min-w-0 flex-1 bg-transparent text-[11px] font-medium text-main outline-none placeholder:text-faint"
-              />
-              <button
-                type="submit"
-                className="rounded-md bg-brand px-2 py-0.5 text-[10px] font-semibold text-white cursor-pointer hover-brand"
-              >
-                Apply
-              </button>
-            </form>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-const APY_PRESETS: ThresholdPreset[] = [
-  { label: ">3%", value: 3 },
-  { label: ">5%", value: 5 },
-  { label: ">10%", value: 10 },
-  { label: ">20%", value: 20 },
-];
-
-const TVL_PRESETS: ThresholdPreset[] = [
-  { label: ">$100K", value: 100_000 },
-  { label: ">$1M", value: 1_000_000 },
-  { label: ">$10M", value: 10_000_000 },
-  { label: ">$100M", value: 100_000_000 },
-];
-
-const RISK_LABEL: Record<VaultRisk, string> = {
-  low: "Low",
-  medium: "Medium",
-  high: "High",
-};
-
-const RISK_CLASS: Record<VaultRisk, string> = {
-  low: "bg-[rgba(64,182,107,0.12)] text-[var(--color-positive)]",
-  medium: "bg-[rgba(96,165,250,0.14)] text-[#60a5fa]",
-  high: "bg-[rgba(250,43,57,0.12)] text-[var(--color-negative)]",
-};
-
-function formatTvl(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "—";
-  if (value >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)}B`;
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(2)}K`;
-  return `$${value.toFixed(2)}`;
-}
-
-function formatApy(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return `${value.toFixed(2)}%`;
-}
-
-const BLOCK_EXPLORERS: Record<number, string> = {
-  1: "https://etherscan.io/address",
-  10: "https://optimistic.etherscan.io/address",
-  137: "https://polygonscan.com/address",
-  8453: "https://basescan.org/address",
-  42161: "https://arbiscan.io/address",
-};
-
-function resolveVaultLink(vault: VaultStrategy): string | null {
-  if (vault.protocolUrl) return vault.protocolUrl;
-  const explorer = BLOCK_EXPLORERS[vault.chainId];
-  if (!explorer) return null;
-  return `${explorer}/${vault.vaultAddress}`;
-}
-
-function formatTimelock(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds <= 0) return "";
-  const days = seconds / 86_400;
-  if (days >= 1) return `${days.toFixed(0)}d lock`;
-  const hours = seconds / 3_600;
-  if (hours >= 1) return `${hours.toFixed(0)}h lock`;
-  return `${Math.round(seconds / 60)}m lock`;
-}
-
-function sortVaults(
-  vaults: VaultStrategy[],
-  sortBy: VaultSortKey,
-): VaultStrategy[] {
-  const next = [...vaults];
-  if (sortBy === "apy") next.sort((a, b) => b.apy - a.apy);
-  if (sortBy === "tvl") next.sort((a, b) => b.tvlUsd - a.tvlUsd);
-  return next;
-}
-
-const SKELETON_ROWS = Array.from({ length: 5 }, (_, i) => i);
-
-function SkeletonList() {
-  return (
-    <motion.ul
-      key="skeleton"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="mt-3 flex flex-col gap-2"
-    >
-      {SKELETON_ROWS.map((index) => (
-        <motion.li
-          key={index}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.06, duration: 0.3, ease: "easeOut" }}
-        >
-          <div className="flex items-center justify-between gap-4 rounded-2xl bg-surface-raised px-4 py-4">
-            <div className="flex items-center gap-3">
-              <motion.div
-                className="h-10 w-10 rounded-full bg-surface-muted"
-                animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{
-                  duration: 1.6,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-              <div className="flex flex-col gap-2">
-                <motion.div
-                  className="h-3 w-28 rounded-full bg-surface-muted"
-                  animate={{ opacity: [0.6, 1, 0.6] }}
-                  transition={{
-                    duration: 1.6,
-                    delay: 0.15,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-                <motion.div
-                  className="h-2.5 w-44 rounded-full bg-surface-muted"
-                  animate={{ opacity: [0.4, 0.8, 0.4] }}
-                  transition={{
-                    duration: 1.6,
-                    delay: 0.25,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-5">
-              <motion.div
-                className="hidden h-6 w-14 rounded-full bg-surface-muted sm:block"
-                animate={{ opacity: [0.5, 0.9, 0.5] }}
-                transition={{
-                  duration: 1.6,
-                  delay: 0.35,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-              <motion.div
-                className="hidden h-6 w-14 rounded-full bg-surface-muted sm:block"
-                animate={{ opacity: [0.5, 0.9, 0.5] }}
-                transition={{
-                  duration: 1.6,
-                  delay: 0.45,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-              <motion.div
-                className="h-7 w-16 rounded-full bg-surface-muted"
-                animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{
-                  duration: 1.6,
-                  delay: 0.55,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-            </div>
-          </div>
-        </motion.li>
-      ))}
-    </motion.ul>
-  );
-}
-
-function EmptyState() {
-  return (
-    <motion.div
-      key="empty"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.25 }}
-      className="mt-3 flex flex-col items-center justify-center gap-2 rounded-2xl bg-surface-raised px-6 py-10 text-center"
-    >
-      <FiInbox className="h-6 w-6 text-muted" />
-      <p className="text-sm font-semibold text-main">No vaults available</p>
-      <p className="max-w-xs text-xs text-muted">
-        Try another token or chain — we couldn&apos;t find routes for this
-        combination on LI.FI Earn.
-      </p>
-    </motion.div>
-  );
-}
-
-function ErrorState({ message }: { message: string }) {
-  return (
-    <motion.div
-      key="error"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.25 }}
-      className="mt-3 flex flex-col items-center justify-center gap-2 rounded-2xl border border-[rgba(250,43,57,0.35)] bg-[rgba(250,43,57,0.08)] px-6 py-10 text-center"
-    >
-      <FiAlertTriangle className="h-6 w-6 text-[var(--color-negative)]" />
-      <p className="text-sm font-semibold text-main">Something went wrong</p>
-      <p className="max-w-xs text-xs text-muted">{message}</p>
-    </motion.div>
-  );
-}
+import { IdleAggregatorCard } from "../idle-aggregator-card";
+import {
+  formatApy,
+  formatTimelock,
+  formatTvl,
+  resolveVaultLink,
+  RISK_CLASS,
+  RISK_LABEL,
+  sortVaults,
+} from "./vault-list-utils";
+import { RiskFilterChips } from "./risk-filter-chips";
+import {
+  ProtocolFilterDropdown,
+} from "./protocol-filter-dropdown";
+import {
+  APY_PRESETS,
+  MinThresholdDropdown,
+  TVL_PRESETS,
+} from "./min-threshold-dropdown";
+import { EmptyState, ErrorState, SkeletonList } from "./vault-list-states";
 
 export function VaultList() {
   const vaults = useExpertStore((state) => state.vaults);
@@ -669,7 +159,10 @@ export function VaultList() {
         acc[vault.risk] = (acc[vault.risk] ?? 0) + 1;
         return acc;
       },
-      { low: 0, medium: 0, high: 0 } as Record<VaultRisk, number>,
+      { low: 0, medium: 0, high: 0 } as Record<
+        "low" | "medium" | "high",
+        number
+      >,
     );
   }, [vaults, showOnlyTransactional]);
 
@@ -867,7 +360,7 @@ export function VaultList() {
                     }
                   >
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="relative h-10 w-10 flex-shrink-0">
+                      <div className="relative h-10 w-10 shrink-0">
                         <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-brand-soft text-sm font-semibold text-brand">
                           {protocolLogoUri ? (
                             <Image
@@ -883,7 +376,7 @@ export function VaultList() {
                           )}
                         </span>
                         {chainLogo ? (
-                          <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center overflow-hidden rounded-full border-2 border-[var(--color-surface-2)] bg-[var(--color-surface-2)]">
+                          <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center overflow-hidden rounded-full border-2 border-(--color-surface-2) bg-(--color-surface-2)">
                             <Image
                               src={chainLogo}
                               alt={vault.chainShortName}
@@ -952,7 +445,7 @@ export function VaultList() {
                       </div>
                     </div>
 
-                    <div className="flex flex-shrink-0 items-center gap-5">
+                    <div className="flex shrink-0 items-center gap-5">
                       <div className="hidden flex-col items-end sm:flex">
                         <span className="text-[10px] uppercase tracking-wide text-faint">
                           TVL
