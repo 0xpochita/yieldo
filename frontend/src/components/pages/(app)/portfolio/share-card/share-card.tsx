@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 import type { LifiChainMeta } from "@/lib/lifi-meta";
 import type { LifiPortfolioPosition } from "@/lib/lifi-portfolio";
 import { resolveProtocol } from "@/lib/protocol-registry";
+import { formatUsd, shortenAddress } from "./share-card-utils";
 
 type ShareCardProps = {
   open: boolean;
@@ -17,19 +18,6 @@ type ShareCardProps = {
   positions: LifiPortfolioPosition[];
   chainsById: Record<number, LifiChainMeta>;
 };
-
-function formatUsd(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "$0.00";
-  if (value < 0.01) return "< $0.01";
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(2)}K`;
-  return `$${value.toFixed(2)}`;
-}
-
-function shortenAddress(address: string): string {
-  if (!address || address.length < 10) return address || "";
-  return `${address.slice(0, 6)}…${address.slice(-4)}`;
-}
 
 export function ShareCard({
   open,

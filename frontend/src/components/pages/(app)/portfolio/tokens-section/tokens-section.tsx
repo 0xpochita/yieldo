@@ -4,38 +4,13 @@ import { HiOutlineBanknotes } from "react-icons/hi2";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import type { PortfolioHolding } from "@/lib/portfolio-fetcher";
+import { formatAmount, formatPrice, formatUsd, SKELETON_ROWS } from "./tokens-section-utils";
 
 type TokensSectionProps = {
   holdings: PortfolioHolding[];
   status: "idle" | "loading" | "ready" | "error";
   networkFilter: number | "all";
 };
-
-function formatUsd(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "$0.00";
-  if (value < 0.01) return "< $0.01";
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(2)}K`;
-  return `$${value.toFixed(2)}`;
-}
-
-function formatAmount(value: number, symbol: string): string {
-  if (!Number.isFinite(value)) return `0 ${symbol}`;
-  if (value === 0) return `0 ${symbol}`;
-  if (value < 0.0001) return `< 0.0001 ${symbol}`;
-  if (value >= 1_000) return `${value.toLocaleString("en-US", { maximumFractionDigits: 2 })} ${symbol}`;
-  if (value >= 1) return `${value.toFixed(3)} ${symbol}`;
-  return `${value.toFixed(4)} ${symbol}`;
-}
-
-function formatPrice(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "—";
-  if (value < 0.01) return `$${value.toFixed(4)}`;
-  if (value >= 1_000) return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
-  return `$${value.toFixed(2)}`;
-}
-
-const SKELETON_ROWS = [0, 1, 2, 3];
 
 export function TokensSection({
   holdings,
@@ -59,7 +34,7 @@ export function TokensSection({
         </div>
       </header>
 
-      <div className="mt-4 hidden grid-cols-[minmax(0,1fr)_100px_140px_120px] items-center px-4 text-[10px] font-semibold uppercase tracking-wide text-faint sm:grid">
+      <div className="mt-4 hidden grid-cols-[minmax(0,1fr)_150px_200px_135px] items-center px-4 text-[10px] font-semibold uppercase tracking-wide text-faint sm:grid">
         <span>Token</span>
         <span className="text-right">Price</span>
         <span className="text-right">Balance</span>
@@ -110,7 +85,7 @@ export function TokensSection({
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.03, duration: 0.24 }}
-                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-2xl bg-surface-raised px-4 py-3 sm:grid-cols-[minmax(0,1fr)_100px_140px_120px]"
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-2xl bg-surface-raised px-4 py-3 sm:grid-cols-[minmax(0,1fr)_140px_180px_120px]"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="relative h-9 w-9 flex-shrink-0">

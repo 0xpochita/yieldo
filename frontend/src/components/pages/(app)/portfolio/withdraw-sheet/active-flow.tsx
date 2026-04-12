@@ -1,150 +1,34 @@
 "use client";
 
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import {
-  FiAlertTriangle,
   FiArrowDown,
-  FiCheck,
-  FiExternalLink,
   FiLoader,
-  FiX,
 } from "react-icons/fi";
-import { HiOutlineWallet } from "react-icons/hi2";
-import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useEffect } from "react";
 import { formatUnits, parseUnits } from "viem";
 import {
-  useAccount,
   useChainId,
   useSendTransaction,
   useSwitchChain,
 } from "wagmi";
-import { useWalletReady } from "@/lib/wallet-ready";
 import { resolveProtocol } from "@/lib/protocol-registry";
 import { useMetaStore, useWithdrawStore } from "@/stores";
+import {
+  ConnectPrompt,
+  ErrorState,
+  QuotingState,
+  SuccessState,
+} from "./withdraw-sheet-states";
+import {
+  formatBalance,
+  formatDuration,
+  formatUsd,
+  PERCENTAGE_OPTIONS,
+} from "./withdraw-sheet-utils";
+import { useAccount } from "wagmi";
 
-const PERCENTAGE_OPTIONS = [25, 50, 75, 100];
-
-function formatUsd(raw: string | number | undefined): string {
-  const value = typeof raw === "string" ? Number.parseFloat(raw) : raw ?? 0;
-  if (!Number.isFinite(value) || value <= 0) return "$0.00";
-  if (value < 0.01) return "< $0.01";
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(2)}K`;
-  return `$${value.toFixed(2)}`;
-}
-
-function formatBalance(
-  raw: string,
-  decimals: number,
-  symbol: string,
-): string {
-  try {
-    const value = BigInt(raw || "0");
-    if (value === 0n) return `0 ${symbol}`;
-    const amount = Number(formatUnits(value, decimals));
-    if (!Number.isFinite(amount) || amount === 0) return `0 ${symbol}`;
-    if (amount < 0.0001) return `< 0.0001 ${symbol}`;
-    if (amount >= 1_000)
-      return `${amount.toLocaleString("en-US", { maximumFractionDigits: 2 })} ${symbol}`;
-    return `${amount.toFixed(4)} ${symbol}`;
-  } catch {
-    return `— ${symbol}`;
-  }
-}
-
-function formatDuration(seconds?: number): string {
-  if (!seconds || !Number.isFinite(seconds)) return "—";
-  if (seconds < 60) return `${Math.round(seconds)}s`;
-  const minutes = seconds / 60;
-  if (minutes < 60) return `${Math.round(minutes)} min`;
-  return `${(minutes / 60).toFixed(1)} h`;
-}
-
-export function WithdrawSheet() {
-  const open = useWithdrawStore((state) => state.open);
-  const closeSheet = useWithdrawStore((state) => state.closeSheet);
-  const ready = useWalletReady();
-
-  return (
-    <AnimatePresence>
-      {open ? (
-        <motion.div
-          key="backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          onClick={closeSheet}
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6"
-        >
-          <motion.div
-            key="sheet"
-            initial={{ y: "100%", opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "100%", opacity: 0 }}
-            transition={{ type: "spring", damping: 32, stiffness: 320 }}
-            onClick={(event) => event.stopPropagation()}
-            className="w-full max-w-[520px] overflow-hidden rounded-t-3xl border border-main bg-surface shadow-[0_-12px_48px_rgba(0,0,0,0.6)] sm:rounded-3xl"
-          >
-            {ready ? <WithdrawBody /> : <LoadingState />}
-          </motion.div>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 p-10">
-      <FiLoader className="h-6 w-6 animate-spin text-muted" />
-      <p className="text-sm text-muted">Loading wallet…</p>
-    </div>
-  );
-}
-
-function WithdrawBody() {
-  const closeSheet = useWithdrawStore((state) => state.closeSheet);
-  const position = useWithdrawStore((state) => state.position);
-
-  if (!position) return null;
-
-  return (
-    <div className="flex flex-col">
-      <SheetHeader onClose={closeSheet} />
-      <div className="px-5 pb-5 pt-4">
-        <ConnectionGate />
-      </div>
-    </div>
-  );
-}
-
-function SheetHeader({ onClose }: { onClose: () => void }) {
-  return (
-    <div className="flex items-center justify-between border-b border-main px-5 py-4">
-      <div>
-        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-faint">
-          Withdraw
-        </div>
-        <h3 className="text-base font-semibold text-main">
-          Pull funds out of your vault
-        </h3>
-      </div>
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close"
-        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-surface-raised text-muted transition-colors hover:bg-surface-muted hover:text-main"
-      >
-        <FiX className="h-4 w-4" />
-      </button>
-    </div>
-  );
-}
-
-function ConnectionGate() {
+export function ConnectionGate() {
   const { address, isConnected } = useAccount();
 
   if (!isConnected || !address) {
@@ -152,35 +36,6 @@ function ConnectionGate() {
   }
 
   return <ActiveFlow walletAddress={address} />;
-}
-
-function ConnectPrompt() {
-  return (
-    <div className="flex flex-col items-center gap-4 py-8 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-brand">
-        <HiOutlineWallet className="h-5 w-5" />
-      </div>
-      <div>
-        <p className="text-sm font-semibold text-main">Connect your wallet</p>
-        <p className="mx-auto mt-1 max-w-xs text-xs text-muted">
-          You&apos;ll need a connected wallet to sign the withdrawal
-          transaction on-chain.
-        </p>
-      </div>
-      <ConnectButton.Custom>
-        {({ openConnectModal, mounted }) => (
-          <button
-            type="button"
-            disabled={!mounted}
-            onClick={openConnectModal}
-            className="cursor-pointer rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-colors hover-brand disabled:opacity-60"
-          >
-            Connect wallet
-          </button>
-        )}
-      </ConnectButton.Custom>
-    </div>
-  );
 }
 
 function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
@@ -277,89 +132,25 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
 
   if (step === "quoting") {
     return (
-      <div className="flex flex-col items-center gap-3 py-10">
-        <FiLoader className="h-6 w-6 animate-spin text-brand" />
-        <p className="text-sm font-semibold text-main">
-          Preparing withdrawal route…
-        </p>
-        <p className="text-xs text-muted">
-          Routing {position.asset.symbol} out of {resolved.displayName}
-        </p>
-      </div>
+      <QuotingState
+        symbol={position.asset.symbol}
+        protocolName={resolved.displayName}
+      />
     );
   }
 
   if (step === "error" && !quote) {
     return (
-      <div className="flex flex-col items-center gap-3 py-10 text-center">
-        <FiAlertTriangle className="h-6 w-6 text-(--color-negative)" />
-        <p className="text-sm font-semibold text-main">
-          Couldn&apos;t prepare this withdrawal
-        </p>
-        <p className="mx-auto max-w-xs text-xs text-muted">
-          {error ??
-            "LI.FI Composer doesn't support an automated exit for this vault yet. Try the protocol's native UI."}
-        </p>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => fetchQuote(walletAddress)}
-            className="cursor-pointer rounded-full bg-brand px-4 py-2 text-xs font-semibold text-white transition-colors hover-brand"
-          >
-            Try again
-          </button>
-          <button
-            type="button"
-            onClick={closeSheet}
-            className="cursor-pointer rounded-full border border-main px-4 py-2 text-xs font-semibold text-muted transition-colors hover:text-main"
-          >
-            Close
-          </button>
-        </div>
-      </div>
+      <ErrorState
+        error={error}
+        onRetry={() => fetchQuote(walletAddress)}
+        onClose={closeSheet}
+      />
     );
   }
 
   if (step === "success") {
-    return (
-      <div className="flex flex-col items-center gap-4 py-10 text-center">
-        <motion.div
-          initial={{ scale: 0, rotate: -30 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 340, damping: 18 }}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-soft"
-        >
-          <FiCheck className="h-7 w-7 text-brand" />
-        </motion.div>
-        <div>
-          <p className="text-base font-semibold text-main">
-            Withdrawal submitted
-          </p>
-          <p className="mx-auto mt-1 max-w-xs text-xs text-muted">
-            Funds will land back in your wallet as soon as the transaction is
-            confirmed on chain.
-          </p>
-        </div>
-        {txHash ? (
-          <a
-            href={`https://scan.li.fi/tx/${txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs font-semibold text-brand underline"
-          >
-            View on LI.FI Scan
-            <FiExternalLink className="h-3 w-3" />
-          </a>
-        ) : null}
-        <button
-          type="button"
-          onClick={closeSheet}
-          className="mt-2 cursor-pointer rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white transition-colors hover-brand"
-        >
-          Done
-        </button>
-      </div>
-    );
+    return <SuccessState txHash={txHash} onClose={closeSheet} />;
   }
 
   if (!quote) return null;
