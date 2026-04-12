@@ -56,7 +56,7 @@ export function NetworkFilter({
             unoptimized
           />
         ) : (
-          <FiGlobe className="h-4 w-4 text-brand" />
+          <FiGlobe className="h-4 w-4 text-[#60a5fa]" />
         )}
         <span className="tracking-tight">
           {activeChain ? activeChain.name : "All networks"}
@@ -83,7 +83,7 @@ export function NetworkFilter({
               }}
               className="flex w-full items-center gap-3 px-4 py-3 text-left cursor-pointer transition-colors hover:bg-surface-muted"
             >
-              <FiGlobe className="h-5 w-5 text-brand" />
+              <FiGlobe className="h-5 w-5 text-[#60a5fa]" />
               <span className="flex-1 text-sm font-semibold text-main">
                 All networks
               </span>
