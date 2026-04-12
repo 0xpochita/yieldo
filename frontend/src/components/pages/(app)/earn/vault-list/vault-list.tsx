@@ -430,6 +430,17 @@ export function VaultList() {
                         <span className="line-clamp-1 text-xs text-muted">
                           {vault.vaultName} · {vault.chainShortName}
                         </span>
+                        <span className="inline-flex items-center gap-1 text-[9px] text-faint">
+                          via
+                          <Image
+                            src="/Assets/Images/Logo-Brand/logo_lifi_light.svg"
+                            alt="LI.FI"
+                            width={9}
+                            height={9}
+                            className="h-2 w-2 opacity-60 invert"
+                          />
+                          <span className="font-semibold">LI.FI</span>
+                        </span>
                         {timelockLabel || vault.kyc ? (
                           <div className="mt-1 flex flex-wrap items-center gap-1.5">
                             {timelockLabel ? (

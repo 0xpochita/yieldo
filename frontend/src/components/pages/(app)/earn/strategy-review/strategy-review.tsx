@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence } from "motion/react";
+import Image from "next/image";
 import { useMemo } from "react";
 import { useExpertStore, useMetaStore } from "@/stores";
 import { RISK_CLASS, RISK_LABEL } from "./strategy-review-utils";
@@ -36,13 +37,23 @@ export function StrategyReview() {
   const isLoading = status === "loading" || status === "idle";
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-main bg-surface p-4 mb-10">
+    <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-main bg-surface p-3 mb-10">
       <header className="flex items-center justify-between">
         <div className="flex flex-col">
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-faint">
             Strategy review
           </span>
-          <h3 className="text-xs font-semibold text-main">
+          <h3 className="flex items-center gap-1.5 text-xs font-semibold text-main mt-2">
+            {vault?.protocolLogoUri ? (
+              <Image
+                src={vault.protocolLogoUri}
+                alt={vault.protocol}
+                width={16}
+                height={16}
+                className="h-4 w-4 rounded-full object-contain"
+                unoptimized
+              />
+            ) : null}
             {vault ? vault.protocol : "Select a vault to continue"}
           </h3>
         </div>

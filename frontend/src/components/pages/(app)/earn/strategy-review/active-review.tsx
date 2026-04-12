@@ -61,17 +61,17 @@ export function ActiveReview({
       <div className="flex items-center gap-3 rounded-2xl bg-surface-raised p-3">
         <div className="relative h-11 w-11 shrink-0">
           <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-brand-soft text-sm font-semibold text-brand">
-            {vault.protocolLogoUri ? (
+            {tokenLogo ? (
               <Image
-                src={vault.protocolLogoUri}
-                alt={vault.protocol}
+                src={tokenLogo}
+                alt={vault.tokenSymbol}
                 width={44}
                 height={44}
                 className="h-full w-full object-contain"
                 unoptimized
               />
             ) : (
-              vault.protocol.charAt(0).toUpperCase()
+              vault.tokenSymbol.charAt(0).toUpperCase()
             )}
           </span>
           {chainLogo ? (
@@ -93,6 +93,21 @@ export function ActiveReview({
           </span>
           <span className="truncate text-[11px] text-muted">
             {vault.tokenSymbol} &middot; {vault.chainShortName}
+          </span>
+          <span className="flex items-center gap-1 text-[10px] text-faint">
+            You will receive
+            {tokenLogo ? (
+              <Image
+                src={tokenLogo}
+                alt={vault.tokenSymbol}
+                width={12}
+                height={12}
+                className="h-3 w-3 rounded-full object-contain"
+                unoptimized
+              />
+            ) : null}
+            <span className="font-semibold text-muted">{vault.vaultName}</span>
+            as shares token
           </span>
         </div>
         <div className="flex items-center gap-1.5">

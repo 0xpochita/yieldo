@@ -85,7 +85,7 @@ export function IdleAggregatorCard() {
             <FiArrowLeft className="h-4 w-4" />
             Enter an amount to continue
           </div>
-          <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-faint">
+          <div className="flex items-center gap-2 text-[11px] font-medium tracking-wide text-faint">
             <Image
               src="/Assets/Images/Logo-Brand/logo_lifi_light.svg"
               alt="LI.FI"
