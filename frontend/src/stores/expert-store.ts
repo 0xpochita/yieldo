@@ -132,7 +132,11 @@ export const useExpertStore = create<ExpertState>((set, get) => ({
   tvlMinFilter: null,
   setToken: (token) => set({ token }),
   setChain: (chain) => set({ chain }),
-  setAmount: (amount) => set({ amount }),
+  setAmount: (amount) => {
+    const parsed = Number.parseFloat(amount || "0");
+    const valid = Number.isFinite(parsed) && parsed > 0;
+    set(valid ? { amount } : { amount, selectedVaultId: null, vaults: [] });
+  },
   setSortBy: (sortBy) => set({ sortBy }),
   setShowOnlyTransactional: (showOnlyTransactional) =>
     set({ showOnlyTransactional }),
