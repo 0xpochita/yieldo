@@ -12,9 +12,14 @@ function shorten(address: string): string {
 type PortfolioHeaderProps = {
   address: string | null;
   right?: React.ReactNode;
+  onShareClick?: () => void;
 };
 
-export function PortfolioHeader({ address, right }: PortfolioHeaderProps) {
+export function PortfolioHeader({
+  address,
+  right,
+  onShareClick,
+}: PortfolioHeaderProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -69,18 +74,11 @@ export function PortfolioHeader({ address, right }: PortfolioHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        {address ? (
+        {address && onShareClick ? (
           <button
             type="button"
             className="flex items-center gap-1.5 rounded-full bg-surface-raised px-4 py-2 text-xs font-semibold text-main cursor-pointer transition-colors hover:bg-surface-muted"
-            onClick={async () => {
-              try {
-                await navigator.share?.({
-                  title: "Yieldo portfolio",
-                  url: window.location.href,
-                });
-              } catch {}
-            }}
+            onClick={onShareClick}
           >
             <FiShare2 className="h-3.5 w-3.5" />
             Share

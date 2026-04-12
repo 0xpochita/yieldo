@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAccount, useConfig } from "wagmi";
 import { useWalletReady } from "@/lib/wallet-ready";
 import { useMetaStore, usePortfolioStore } from "@/stores";
@@ -11,6 +11,7 @@ import { PortfolioHeader } from "./portfolio-header";
 import { PositionsSection } from "./positions-section";
 import { TokensSection } from "./tokens-section";
 import { TotalSummary } from "./total-summary";
+import { ShareCard } from "./share-card";
 import { WithdrawSheet } from "./withdraw-sheet";
 
 export function PortfolioView() {
@@ -48,6 +49,7 @@ function ConnectionGate() {
 }
 
 function ConnectedPortfolio({ address }: { address: `0x${string}` }) {
+  const [shareOpen, setShareOpen] = useState(false);
   const config = useConfig();
   const chainsById = useMetaStore((state) => state.chainsById);
   const tokensByChain = useMetaStore((state) => state.tokensByChain);
@@ -114,6 +116,7 @@ function ConnectedPortfolio({ address }: { address: `0x${string}` }) {
         <PortfolioHeader
           address={address}
           right={<NetworkFilter chainsById={chainsById} />}
+          onShareClick={() => setShareOpen(true)}
         />
       </motion.div>
 
@@ -136,6 +139,15 @@ function ConnectedPortfolio({ address }: { address: `0x${string}` }) {
           chainsById={chainsById}
         />
       </div>
+
+      <ShareCard
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        address={address}
+        totalPositionsUsd={totalPositionsUsd}
+        positions={filteredPositions}
+        chainsById={chainsById}
+      />
     </>
   );
 }
