@@ -10,7 +10,7 @@ type WalletButtonProps = {
 };
 
 const DESKTOP_CLASS =
-  "relative z-10 inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(30,64,175,0.45)] transition-colors cursor-pointer hover-brand";
+  "relative z-10 inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white transition-colors cursor-pointer hover-brand";
 
 const MOBILE_CLASS =
   "inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-base font-semibold text-white transition-colors cursor-pointer hover-brand";

@@ -28,7 +28,7 @@ export function PositionsSection({
   const isEmpty = status === "ready" && positions.length === 0;
 
   return (
-    <section className="rounded-3xl border border-main bg-surface p-5 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
+    <section className="rounded-3xl border border-main bg-surface p-5">
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold tracking-tight text-main">

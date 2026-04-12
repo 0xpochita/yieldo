@@ -111,7 +111,7 @@ export function MinThresholdDropdown({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-[calc(100%+6px)] z-20 flex w-52 flex-col gap-1 overflow-hidden rounded-2xl border border-main bg-surface-raised p-2 shadow-[0_16px_40px_rgba(0,0,0,0.45)]"
+            className="absolute right-0 top-[calc(100%+6px)] z-20 flex w-52 flex-col gap-1 overflow-hidden rounded-2xl border border-main bg-surface-raised p-2"
           >
             <button
               type="button"

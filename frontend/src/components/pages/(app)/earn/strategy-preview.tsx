@@ -20,7 +20,7 @@ export function StrategyPreview() {
   }
 
   return (
-    <section className="relative flex flex-col gap-3 overflow-hidden rounded-3xl border border-main bg-surface p-4 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+    <section className="relative flex flex-col gap-3 overflow-hidden rounded-3xl border border-main bg-surface p-4">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_0%,rgba(30,64,175,0.18),transparent_55%)]" />
 
       <div className="relative flex items-center gap-2">

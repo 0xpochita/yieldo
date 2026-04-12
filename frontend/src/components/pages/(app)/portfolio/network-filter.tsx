@@ -73,7 +73,7 @@ export function NetworkFilter({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.96 }}
             transition={{ duration: 0.18 }}
-            className="absolute right-0 z-20 mt-2 max-h-[320px] w-56 origin-top-right overflow-y-auto rounded-2xl border border-main bg-surface-raised shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
+            className="absolute right-0 z-20 mt-2 max-h-[320px] w-56 origin-top-right overflow-y-auto rounded-2xl border border-main bg-surface-raised"
           >
             <button
               type="button"

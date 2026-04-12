@@ -36,7 +36,7 @@ export function StrategyReview() {
   const isLoading = status === "loading" || status === "idle";
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-main bg-surface p-4 shadow-[0_16px_40px_rgba(0,0,0,0.35)] mb-10">
+    <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-main bg-surface p-4 mb-10">
       <header className="flex items-center justify-between">
         <div className="flex flex-col">
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-faint">

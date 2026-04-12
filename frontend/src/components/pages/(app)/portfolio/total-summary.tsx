@@ -30,7 +30,7 @@ export function TotalSummary({
   const isLoading = status === "loading" || status === "idle";
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-main bg-surface p-6 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+    <section className="relative overflow-hidden rounded-3xl border border-main bg-surface p-6 ">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(30,64,175,0.22),transparent_55%)]" />
       <div className="relative flex flex-col gap-5">
         <div className="flex items-center gap-2">

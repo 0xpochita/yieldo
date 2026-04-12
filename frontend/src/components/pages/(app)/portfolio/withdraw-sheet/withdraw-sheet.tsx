@@ -31,7 +31,7 @@ export function WithdrawSheet() {
             exit={{ y: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 32, stiffness: 320 }}
             onClick={(event) => event.stopPropagation()}
-            className="w-full max-w-[520px] overflow-hidden rounded-t-3xl border border-main bg-surface shadow-[0_-12px_48px_rgba(0,0,0,0.6)] sm:rounded-3xl"
+            className="w-full max-w-[520px] overflow-hidden rounded-t-3xl border border-main bg-surface sm:rounded-3xl"
           >
             {ready ? <WithdrawBody /> : <LoadingState />}
           </motion.div>

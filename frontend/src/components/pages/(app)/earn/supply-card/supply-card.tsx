@@ -90,7 +90,7 @@ export function SupplyCard() {
   }
 
   return (
-    <section className="rounded-3xl border border-main bg-surface p-2.5 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+    <section className="rounded-3xl border border-main bg-surface p-2.5 ">
       <div className="flex items-center justify-between px-2 pt-1">
         <div className="rounded-full bg-surface-muted px-3 py-1.5 text-xs font-semibold text-main">
           Supply

@@ -202,7 +202,7 @@ export function VaultList() {
   }
 
   return (
-    <section className="flex h-full min-h-0 flex-1 flex-col rounded-3xl border border-main bg-surface p-3 shadow-[0_16px_40px_rgba(0,0,0,0.35)] mb-10">
+    <section className="flex h-full min-h-0 flex-1 flex-col rounded-3xl border border-main bg-surface p-3  mb-10">
       <header className="flex items-center justify-between px-3 pt-2">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-brand-soft">

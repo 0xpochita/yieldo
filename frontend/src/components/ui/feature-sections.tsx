@@ -34,7 +34,7 @@ export function FeatureSections({
   footer,
 }: FeatureSectionsProps) {
   return (
-    <section className="relative flex flex-col overflow-hidden rounded-3xl border border-main bg-surface p-5 shadow-[0_16px_40px_rgba(0,0,0,0.35)] sm:p-6">
+    <section className="relative flex flex-col overflow-hidden rounded-3xl border border-main bg-surface p-5  sm:p-6">
       <div className="flex flex-col gap-2">
         {eyebrow ? (
           <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">
@@ -108,7 +108,7 @@ export function FeatureSections({
               <span className="inline-flex items-baseline gap-1 rounded-full bg-white/5 px-2.5 py-1 text-xs font-semibold text-main">
                 {card.aprRange}
                 <span className="text-[9px] font-bold uppercase tracking-wide text-faint">
-                  APR
+                  APY
                 </span>
               </span>
             </div>

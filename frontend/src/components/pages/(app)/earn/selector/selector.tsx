@@ -87,7 +87,7 @@ export function Selector({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.96 }}
             transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
-            className="absolute right-0 z-20 mt-2 w-60 origin-top-right overflow-hidden rounded-2xl border border-main bg-surface-raised shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
+            className="absolute right-0 z-20 mt-2 w-60 origin-top-right overflow-hidden rounded-2xl border border-main bg-surface-raised"
             style={{ willChange: "transform, opacity" }}
           >
             <motion.ul
