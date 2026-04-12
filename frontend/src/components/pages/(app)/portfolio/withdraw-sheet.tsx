@@ -7,15 +7,13 @@ import {
   FiCheck,
   FiExternalLink,
   FiLoader,
-  FiShield,
   FiX,
-  FiZap,
 } from "react-icons/fi";
 import { HiOutlineWallet } from "react-icons/hi2";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useEffect } from "react";
-import { formatUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import {
   useAccount,
   useChainId,
@@ -217,12 +215,22 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
   const withdrawUsd = Number.isFinite(usdValue)
     ? (usdValue * percentage) / 100
     : 0;
-  const withdrawNative = formatBalance(
-    ((BigInt(position.balanceNative || "0") * BigInt(percentage)) / 100n)
-      .toString(),
-    position.asset.decimals,
-    position.asset.symbol,
-  );
+  const withdrawNative = (() => {
+    try {
+      const raw = position.balanceNative || "0";
+      const balanceBn = raw.includes(".")
+        ? parseUnits(raw, position.asset.decimals)
+        : BigInt(raw);
+      const withdrawn = (balanceBn * BigInt(percentage)) / 100n;
+      return formatBalance(
+        withdrawn.toString(),
+        position.asset.decimals,
+        position.asset.symbol,
+      );
+    } catch {
+      return `— ${position.asset.symbol}`;
+    }
+  })();
 
   async function handleConfirm() {
     if (!quote) return;
@@ -231,7 +239,15 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
     try {
       if (currentWalletChainId !== position.chainId) {
         setStep("withdrawing");
-        await switchChainAsync({ chainId: position.chainId });
+        try {
+          await switchChainAsync({ chainId: position.chainId });
+        } catch {
+          setError(
+            `Please switch your wallet to ${chain?.name ?? `chain ${position.chainId}`} to continue.`,
+          );
+          setStep("ready");
+          return;
+        }
       }
 
       setStep("withdrawing");
@@ -247,11 +263,15 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
       setStep("success");
     } catch (err) {
       const raw = (err as Error).message || "Transaction failed";
-      const firstLine = raw.split("\n")[0];
-      const clean =
-        firstLine.length > 200 ? `${firstLine.slice(0, 200)}…` : firstLine;
-      setError(clean);
-      setStep("error");
+      if (raw.includes("User rejected") || raw.includes("user rejected")) {
+        setError("Transaction was rejected in your wallet.");
+      } else {
+        const firstLine = raw.split("\n")[0];
+        setError(
+          firstLine.length > 200 ? `${firstLine.slice(0, 200)}…` : firstLine,
+        );
+      }
+      setStep("ready");
     }
   }
 
@@ -471,7 +491,13 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
       </div>
 
       <div className="flex items-center gap-2 rounded-xl bg-surface-raised/60 px-3 py-2 text-[11px] text-muted">
-        <FiShield className="h-3 w-3 text-brand" />
+        <Image
+          src="/Assets/Images/Logo-Brand/yieldo-transparent.png"
+          alt="Yieldo"
+          width={16}
+          height={16}
+          className="h-4 w-4 object-contain"
+        />
         Non-custodial. Your wallet signs the withdrawal directly.
       </div>
 
@@ -493,17 +519,53 @@ function ActiveFlow({ walletAddress }: { walletAddress: `0x${string}` }) {
             Confirm in your wallet
           </>
         ) : (
-          <>
-            <FiZap className="h-4 w-4" />
-            Confirm withdrawal
-          </>
+          "Confirm withdrawal"
         )}
       </button>
 
-      <p className="text-center text-[10px] text-faint">
-        Routed via LI.FI Composer · exits {resolved.displayName} on{" "}
-        {chain?.name ?? `chain ${position.chainId}`}
-      </p>
+      <div className="flex flex-wrap items-center justify-center gap-1.5 text-[10px] text-faint">
+        <span className="inline-flex items-center gap-1">
+          Routed via
+          <Image
+            src="/Assets/Images/Logo-Brand/logo_lifi_light.svg"
+            alt="LI.FI"
+            width={10}
+            height={10}
+            className="h-2.5 w-2.5 opacity-80 invert"
+          />
+          <span className="font-semibold text-muted">LI.FI Composer</span>
+        </span>
+        <span>·</span>
+        <span className="inline-flex items-center gap-1">
+          exits
+          {resolved.logoPath ? (
+            <Image
+              src={resolved.logoPath}
+              alt={resolved.displayName}
+              width={12}
+              height={12}
+              className="h-3 w-3 rounded-full object-contain"
+            />
+          ) : null}
+          <span className="font-semibold text-muted">
+            {resolved.displayName}
+          </span>
+          on
+          {chain?.logoURI ? (
+            <Image
+              src={chain.logoURI}
+              alt={chain.name}
+              width={12}
+              height={12}
+              className="h-3 w-3 rounded-full object-contain"
+              unoptimized
+            />
+          ) : null}
+          <span className="font-semibold text-muted">
+            {chain?.name ?? `chain ${position.chainId}`}
+          </span>
+        </span>
+      </div>
     </div>
   );
 }

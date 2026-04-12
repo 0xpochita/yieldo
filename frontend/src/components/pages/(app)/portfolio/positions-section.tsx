@@ -27,13 +27,11 @@ function formatUsd(value: number): string {
 
 function formatBalance(
   raw: string,
-  decimals: number,
+  _decimals: number,
   symbol: string,
 ): string {
   try {
-    const value = BigInt(raw);
-    const divisor = 10 ** decimals;
-    const amount = Number(value) / divisor;
+    const amount = Number.parseFloat(raw || "0");
     if (!Number.isFinite(amount) || amount === 0) return `0 ${symbol}`;
     if (amount < 0.0001) return `< 0.0001 ${symbol}`;
     if (amount >= 1_000)
@@ -181,7 +179,7 @@ export function PositionsSection({
                         )}
                       </span>
                     </div>
-                    <span className="flex h-7 items-center gap-1 rounded-full bg-brand-soft px-2.5 text-[10px] font-semibold text-brand">
+                    <span className="flex h-7 items-center gap-1 rounded-full bg-brand px-3 text-[10px] font-semibold text-white transition-colors hover:bg-brand-hover">
                       Withdraw
                       <FiArrowUpRight className="h-3 w-3" />
                     </span>

@@ -34,15 +34,28 @@ type WithdrawState = {
 
 let quoteController: AbortController | null = null;
 
-function applyPercentage(balanceNative: string, percentage: number): string {
+function applyPercentage(
+  balanceNative: string,
+  percentage: number,
+  decimals: number,
+): string {
   try {
-    const balance = BigInt(balanceNative || "0");
+    const raw = balanceNative || "0";
+    const balance = raw.includes(".")
+      ? toBigInt(raw, decimals)
+      : BigInt(raw);
     if (balance === 0n) return "0";
     const pct = BigInt(Math.max(1, Math.min(100, percentage)));
     return ((balance * pct) / 100n).toString();
   } catch {
     return "0";
   }
+}
+
+function toBigInt(decimal: string, decimals: number): bigint {
+  const [whole = "0", frac = ""] = decimal.split(".");
+  const trimmed = frac.slice(0, decimals).padEnd(decimals, "0");
+  return BigInt(whole) * 10n ** BigInt(decimals) + BigInt(trimmed);
 }
 
 export const useWithdrawStore = create<WithdrawState>((set, get) => ({
@@ -85,7 +98,11 @@ export const useWithdrawStore = create<WithdrawState>((set, get) => ({
       return;
     }
 
-    const fromAmount = applyPercentage(position.balanceNative, percentage);
+    const fromAmount = applyPercentage(
+      position.balanceNative,
+      percentage,
+      position.asset.decimals,
+    );
     if (fromAmount === "0") {
       set({
         step: "error",
