@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = `${short} is earning ${formatUsd(totalUsd)} on Yieldo`;
   const description = `${positions.length} active vault${positions.length === 1 ? "" : "s"} across DeFi. Best yield, one click.`;
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://yieldo.xyz";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://yieldo-earn.vercel.app";
 
   return {
     title,

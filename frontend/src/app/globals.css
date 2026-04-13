@@ -10,7 +10,6 @@
   --color-surface-3: #222228;
   --color-line: #2c2c31;
   --color-line-strong: #3a3a41;
-  --color-ink: #ffffff;
   --color-ink-muted: #9b9ba5;
   --color-ink-faint: #6b6b75;
   --color-positive: #40b66b;
@@ -87,6 +86,17 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   font-feature-settings: "cv11", "ss01", "ss03";
+}
+
+button,
+[role="button"],
+a,
+select,
+summary,
+[type="button"],
+[type="submit"],
+[type="reset"] {
+  cursor: pointer;
 }
 
 ::selection {
