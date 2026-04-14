@@ -86,6 +86,28 @@ Dani opens Yieldo, types "3000 USDC on Arbitrum," and instantly sees 15 vault ro
 
 ---
 
+## Supported Chains
+
+| # | Chain | Chain ID | Status |
+|---|-------|----------|--------|
+| 1 | Ethereum | 1 | Live |
+| 2 | Base | 8453 | Live |
+| 3 | Arbitrum | 42161 | Live |
+| 4 | Monad | 143 | Live |
+| 5 | Polygon | 137 | Live |
+| 6 | Katana | 747474 | Live |
+| 7 | BSC | 56 | Live |
+| 8 | Optimism | 10 | Live |
+| 9 | Avalanche | 43114 | Live |
+| 10 | Linea | 59144 | Live |
+| 11 | Gnosis | 100 | Live |
+| 12 | Unichain | 130 | Live |
+| 13 | Mantle | 5000 | Live |
+| 14 | Sonic | 146 | Live |
+| 15 | Celo | 42220 | Live |
+
+---
+
 ## System Architecture
 
 ```
