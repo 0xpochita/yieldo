@@ -1,5 +1,3 @@
-"use client";
-
 import { create } from "zustand";
 import { fetchQuoteViaProxy, type LifiQuoteResponse } from "@/lib/lifi-quote";
 import type { LifiPortfolioPosition } from "@/lib/lifi-portfolio";

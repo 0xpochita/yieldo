@@ -26,9 +26,7 @@ export function getTrackedVaults(): TrackedVault[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) userVaults = JSON.parse(raw) as TrackedVault[];
-  } catch {
-    // ignore
-  }
+  } catch { }
 
   const keys = new Set(
     userVaults.map((v) => `${v.chainId}-${v.vaultAddress.toLowerCase()}`),
@@ -57,9 +55,7 @@ export function addTrackedVault(vault: Omit<TrackedVault, "depositedAt">): void 
       { ...vault, depositedAt: Date.now() },
     ].slice(-50);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    // localStorage unavailable
-  }
+  } catch { }
 }
 
 export function removeTrackedVault(chainId: number, vaultAddress: string): void {
@@ -70,7 +66,5 @@ export function removeTrackedVault(chainId: number, vaultAddress: string): void 
       (v) => `${v.chainId}-${v.vaultAddress.toLowerCase()}` !== key,
     );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    // localStorage unavailable
-  }
+  } catch { }
 }

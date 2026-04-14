@@ -73,9 +73,7 @@ export function ShareCard({
       link.download = "yieldo-earn.png";
       link.href = dataUrl;
       link.click();
-    } catch {
-      // export failed
-    } finally {
+    } catch { } finally {
       setExporting(false);
     }
   }, [exporting]);
@@ -120,7 +118,6 @@ export function ShareCard({
 
                 <div className="relative flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/Assets/Images/Logo-Brand/yieldo-transparent.png"
                       alt="Yieldo"
@@ -208,7 +205,6 @@ export function ShareCard({
                         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                           <div style={{ position: "relative", width: 36, height: 36, flexShrink: 0 }}>
                             {resolved.logoPath ? (
-                              // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={resolved.logoPath}
                                 alt={resolved.displayName}
@@ -241,7 +237,6 @@ export function ShareCard({
                               </div>
                             )}
                             {chain?.logoURI ? (
-                              // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={chain.logoURI}
                                 alt={chain.name}
@@ -335,7 +330,6 @@ export function ShareCard({
                     >
                       Earn with Yieldo
                     </span>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/Assets/Images/Logo-Brand/yieldo-transparent.png"
                       alt="Yieldo"
@@ -354,7 +348,6 @@ export function ShareCard({
                     >
                       Powered by LI.FI
                     </span>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/Assets/Images/Logo-Brand/logo_lifi_light.svg"
                       alt="LI.FI"

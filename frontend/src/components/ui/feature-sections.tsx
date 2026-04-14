@@ -65,7 +65,6 @@ export function FeatureSections({
                   fill
                   sizes="44px"
                   className="object-cover"
-                  unoptimized
                 />
               </span>
               <div className="flex min-w-0 flex-col">
@@ -88,7 +87,6 @@ export function FeatureSections({
                           width={12}
                           height={12}
                           className="h-3 w-3 shrink-0 object-contain"
-                          unoptimized
                         />
                       ) : null}
                       <span>{chain.name}</span>

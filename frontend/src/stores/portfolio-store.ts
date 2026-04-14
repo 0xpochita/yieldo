@@ -1,5 +1,3 @@
-"use client";
-
 import type { Config } from "wagmi";
 import { create } from "zustand";
 import type { LifiChainMeta, LifiTokenMeta } from "@/lib/lifi-meta";

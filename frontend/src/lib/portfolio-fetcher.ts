@@ -120,9 +120,7 @@ async function loadChainHoldings(
         isNative: true,
       });
     }
-  } catch {
-    // ignore native balance errors per chain
-  }
+  } catch { }
 
   const tracked = tokens.filter((token) => {
     if (NATIVE_PLACEHOLDERS.has(token.address.toLowerCase())) return false;
@@ -168,9 +166,7 @@ async function loadChainHoldings(
         isNative: false,
       });
     });
-  } catch {
-    // chain multicall failed; continue
-  }
+  } catch { }
 
   return holdings;
 }
@@ -305,9 +301,7 @@ async function loadTrackedVaultPositions(
           balanceUsd: (amount * 1).toFixed(6),
         });
       });
-    } catch {
-      // chain multicall failed
-    }
+    } catch { }
   }
 
   return results;

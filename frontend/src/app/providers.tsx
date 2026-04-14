@@ -43,9 +43,7 @@ export function Providers({ children }: ProvidersProps) {
         if (!data?.projectId) return;
         setConfig(createWagmiConfig(data.projectId));
       })
-      .catch(() => {
-        // wallet connectivity disabled; app still renders without wagmi
-      });
+      .catch(() => { });
 
     return () => controller.abort();
   }, []);

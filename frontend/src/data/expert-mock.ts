@@ -2,33 +2,6 @@ import type { Chain, Token } from "@/types";
 
 export const mockTokens: Token[] = [
   { symbol: "USDC", name: "USD Coin", usdPrice: 1 },
-  { symbol: "USDT", name: "Tether USD", usdPrice: 1 },
-  { symbol: "DAI", name: "Dai Stablecoin", usdPrice: 1 },
-  { symbol: "USDe", name: "Ethena USDe", usdPrice: 1 },
-  { symbol: "sUSDe", name: "Staked USDe", usdPrice: 1.05 },
-  { symbol: "USDtb", name: "Ethena USDtb", usdPrice: 1 },
-  { symbol: "USDS", name: "USDS", usdPrice: 1 },
-  { symbol: "PYUSD", name: "PayPal USD", usdPrice: 1 },
-  { symbol: "RLUSD", name: "Ripple USD", usdPrice: 1 },
-  { symbol: "USDG", name: "USDG", usdPrice: 1 },
-  { symbol: "ETH", name: "Ether", usdPrice: 2236.26 },
-  { symbol: "WETH", name: "Wrapped Ether", usdPrice: 2236.26 },
-  { symbol: "weETH", name: "Wrapped eETH", usdPrice: 2380 },
-  { symbol: "wstETH", name: "Wrapped stETH", usdPrice: 2650 },
-  { symbol: "rsETH", name: "KelpDAO rsETH", usdPrice: 2300 },
-  { symbol: "ezETH", name: "Renzo ezETH", usdPrice: 2280 },
-  { symbol: "rETH", name: "Rocket Pool ETH", usdPrice: 2500 },
-  { symbol: "osETH", name: "StakeWise osETH", usdPrice: 2300 },
-  { symbol: "tETH", name: "Treehouse tETH", usdPrice: 2280 },
-  { symbol: "WBTC", name: "Wrapped Bitcoin", usdPrice: 84000 },
-  { symbol: "cbBTC", name: "Coinbase BTC", usdPrice: 84000 },
-  { symbol: "LBTC", name: "Lombard LBTC", usdPrice: 84000 },
-  { symbol: "tBTC", name: "Threshold BTC", usdPrice: 84000 },
-  { symbol: "AAVE", name: "Aave", usdPrice: 180 },
-  { symbol: "LINK", name: "Chainlink", usdPrice: 14 },
-  { symbol: "sAVAX", name: "Staked AVAX", usdPrice: 22 },
-  { symbol: "WAVAX", name: "Wrapped AVAX", usdPrice: 21 },
-  { symbol: "WBNB", name: "Wrapped BNB", usdPrice: 600 },
 ];
 
 export const mockChains: Chain[] = [

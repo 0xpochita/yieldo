@@ -1,9 +1,16 @@
-import { DepositSheet } from "./deposit-sheet";
+"use client";
+
+import dynamic from "next/dynamic";
 import { EarnBackground } from "./earn-background";
 import { StrategyPreview } from "./strategy-preview";
 import { StrategyReview } from "./strategy-review";
 import { SupplyCard } from "./supply-card";
 import { VaultList } from "./vault-list";
+
+const DepositSheet = dynamic(
+  () => import("./deposit-sheet").then((m) => m.DepositSheet),
+  { ssr: false },
+);
 
 export function EarnView() {
   return (

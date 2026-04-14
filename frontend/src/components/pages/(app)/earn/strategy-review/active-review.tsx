@@ -45,9 +45,7 @@ export function ActiveReview({
       await navigator.clipboard.writeText(vault.vaultAddress);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1600);
-    } catch {
-      // ignore
-    }
+    } catch { }
   }
 
   return (
@@ -219,29 +217,6 @@ export function ActiveReview({
           })}
         </div>
       </div>
-{/*
-      <div className="mt-auto flex items-center justify-between gap-2 rounded-2xl bg-surface-raised px-3 py-2">
-        <div className="flex min-w-0 flex-col">
-          <span className="text-[10px] uppercase tracking-wide text-faint">
-            Vault address
-          </span>
-          <span className="truncate font-mono text-[11px] text-main">
-            {shortenAddress(vault.vaultAddress)}
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={handleCopy}
-          aria-label="Copy vault address"
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-main text-muted cursor-pointer transition-colors hover:border-strong hover:text-main"
-        >
-          {copied ? (
-            <FiCheck className="h-3.5 w-3.5 text-brand" />
-          ) : (
-            <FiCopy className="h-3.5 w-3.5" />
-          )}
-        </button>
-      </div> */}
     </motion.div>
   );
 }

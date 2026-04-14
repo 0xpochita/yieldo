@@ -11,8 +11,17 @@ import { PortfolioHeader } from "./portfolio-header";
 import { PositionsSection } from "./positions-section";
 import { TokensSection } from "./tokens-section";
 import { TotalSummary } from "./total-summary";
-import { ShareCard } from "./share-card";
-import { WithdrawSheet } from "./withdraw-sheet";
+import dynamic from "next/dynamic";
+
+const ShareCard = dynamic(
+  () => import("./share-card").then((m) => m.ShareCard),
+  { ssr: false },
+);
+
+const WithdrawSheet = dynamic(
+  () => import("./withdraw-sheet").then((m) => m.WithdrawSheet),
+  { ssr: false },
+);
 
 export function PortfolioView() {
   return (

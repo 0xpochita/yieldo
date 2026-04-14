@@ -1,5 +1,3 @@
-"use client";
-
 import { parseUnits } from "viem";
 import { create } from "zustand";
 import { fetchQuoteViaProxy, type LifiQuoteResponse } from "@/lib/lifi-quote";

@@ -1,5 +1,3 @@
-"use client";
-
 import { create } from "zustand";
 import { mockChains, mockTokens } from "@/data";
 import { fetchVaultsViaProxy, type LifiVault } from "@/lib/lifi-earn";
