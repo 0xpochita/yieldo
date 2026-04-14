@@ -1,10 +1,12 @@
 "use client";
 
-import { FiCheck, FiChevronDown } from "react-icons/fi";
+import { FiCheck, FiChevronDown, FiSearch } from "react-icons/fi";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { SelectorProps } from "./option-icon";
 import { OptionIcon } from "./option-icon";
+
+const MAX_VISIBLE = 50;
 
 export function Selector({
   label,
@@ -12,12 +14,18 @@ export function Selector({
   options,
   onSelect,
   variant = "pill",
+  emptyLabel,
 }: SelectorProps) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const showSearch = options.length > 6;
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setSearch("");
+      return;
+    }
     function handleClick(event: MouseEvent) {
       if (!containerRef.current) return;
       if (!containerRef.current.contains(event.target as Node)) {
@@ -28,7 +36,20 @@ export function Selector({
     return () => window.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  const active = options.find((item) => item.key === value) ?? options[0];
+  const active = options.find((item) => item.key === value) ?? options[0] ?? null;
+
+  const filtered = useMemo(() => {
+    const base = search.trim()
+      ? options.filter((o) => {
+          const q = search.toLowerCase();
+          return (
+            o.label.toLowerCase().includes(q) ||
+            o.hint?.toLowerCase().includes(q)
+          );
+        })
+      : options;
+    return base.slice(0, MAX_VISIBLE);
+  }, [options, search]);
 
   const triggerClass =
     variant === "chip"
@@ -40,36 +61,43 @@ export function Selector({
       <motion.button
         type="button"
         aria-label={label}
+        disabled={options.length === 0}
         onClick={() => setOpen((prev) => !prev)}
-        className={triggerClass}
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.96 }}
+        className={`${triggerClass} disabled:cursor-not-allowed disabled:opacity-50`}
+        whileHover={options.length > 0 ? { scale: 1.03 } : undefined}
+        whileTap={options.length > 0 ? { scale: 0.96 } : undefined}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
       >
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.span
-            key={active.key}
-            initial={{ opacity: 0, scale: 0.6, rotate: -45 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            exit={{ opacity: 0, scale: 0.6, rotate: 45 }}
-            transition={{ type: "spring", stiffness: 480, damping: 28 }}
-            className="flex"
-          >
-            <OptionIcon option={active} size={24} />
-          </motion.span>
-        </AnimatePresence>
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.span
-            key={`label-${active.key}`}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-            className="tracking-tight"
-          >
-            {active.label}
-          </motion.span>
-        </AnimatePresence>
+        {active ? (
+          <>
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.span
+                key={active.key}
+                initial={{ opacity: 0, scale: 0.6, rotate: -45 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, scale: 0.6, rotate: 45 }}
+                transition={{ type: "spring", stiffness: 480, damping: 28 }}
+                className="flex"
+              >
+                <OptionIcon option={active} size={24} />
+              </motion.span>
+            </AnimatePresence>
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.span
+                key={`label-${active.key}`}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                className="tracking-tight"
+              >
+                {active.label}
+              </motion.span>
+            </AnimatePresence>
+          </>
+        ) : (
+          <span className="tracking-tight text-muted">{emptyLabel ?? "Loading…"}</span>
+        )}
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ type: "spring", stiffness: 400, damping: 26 }}
@@ -90,45 +118,31 @@ export function Selector({
             className="absolute right-0 z-20 mt-2 w-60 origin-top-right overflow-hidden rounded-2xl border border-main bg-surface-raised"
             style={{ willChange: "transform, opacity" }}
           >
-            <motion.ul
-              initial="hidden"
-              animate="visible"
-              variants={{
-                hidden: {},
-                visible: {
-                  transition: {
-                    staggerChildren: 0.04,
-                    delayChildren: 0.02,
-                  },
-                },
-              }}
-              className="divide-y divide-(--color-line)"
-            >
-              {options.map((option) => {
-                const isActive = option.key === active.key;
+            {showSearch ? (
+              <div className="flex items-center gap-2 border-b border-main px-4 py-2.5">
+                <FiSearch className="h-3.5 w-3.5 text-faint" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search..."
+                  className="min-w-0 flex-1 bg-transparent text-xs text-main outline-none placeholder:text-faint"
+                  autoFocus
+                />
+              </div>
+            ) : null}
+            <ul className="max-h-72 divide-y divide-(--color-line) overflow-y-auto">
+              {filtered.map((option) => {
+                const isActive = option.key === active?.key;
                 return (
-                  <motion.li
-                    key={option.key}
-                    variants={{
-                      hidden: { opacity: 0, x: -8 },
-                      visible: { opacity: 1, x: 0 },
-                    }}
-                    transition={{ duration: 0.22, ease: "easeOut" }}
-                  >
-                    <motion.button
+                  <li key={option.key}>
+                    <button
                       type="button"
                       onClick={() => {
                         onSelect(option.key);
                         setOpen(false);
                       }}
-                      whileHover={{ x: 4 }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 420,
-                        damping: 28,
-                      }}
-                      className="flex w-full items-center justify-between px-4 py-3 text-left cursor-pointer hover:bg-surface-muted"
+                      className="flex w-full items-center justify-between px-4 py-3 text-left cursor-pointer transition-colors duration-100 hover:bg-surface-muted"
                     >
                       <span className="flex items-center gap-3">
                         <OptionIcon option={option} size={28} />
@@ -144,23 +158,15 @@ export function Selector({
                         </span>
                       </span>
                       {isActive ? (
-                        <motion.span
-                          layoutId={`active-dot-${label}`}
-                          className="flex h-4 w-4 items-center justify-center rounded-full bg-brand text-white"
-                          transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 30,
-                          }}
-                        >
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand text-white">
                           <FiCheck className="h-2.5 w-2.5" strokeWidth={3} />
-                        </motion.span>
+                        </span>
                       ) : null}
-                    </motion.button>
-                  </motion.li>
+                    </button>
+                  </li>
                 );
               })}
-            </motion.ul>
+            </ul>
           </motion.div>
         ) : null}
       </AnimatePresence>

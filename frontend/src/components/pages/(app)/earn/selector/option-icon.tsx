@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 
 export type SelectorOption = {
   key: string;
@@ -15,6 +16,7 @@ export type SelectorProps = {
   options: SelectorOption[];
   onSelect: (key: string) => void;
   variant?: "chip" | "pill";
+  emptyLabel?: string;
 };
 
 export function OptionIcon({
@@ -24,7 +26,9 @@ export function OptionIcon({
   option: SelectorOption;
   size: number;
 }) {
-  if (option.iconUrl) {
+  const [error, setError] = useState(false);
+
+  if (option.iconUrl && !error) {
     return (
       <span
         className="relative overflow-hidden rounded-full bg-surface-muted"
@@ -37,16 +41,16 @@ export function OptionIcon({
           sizes={`${size}px`}
           className="object-contain"
           unoptimized
+          onError={() => setError(true)}
         />
       </span>
     );
   }
+
   return (
     <span
-      className="flex items-center justify-center rounded-full bg-brand text-[11px] font-semibold text-white"
+      className="animate-pulse rounded-full bg-surface-muted"
       style={{ width: size, height: size }}
-    >
-      {option.label.charAt(0)}
-    </span>
+    />
   );
 }

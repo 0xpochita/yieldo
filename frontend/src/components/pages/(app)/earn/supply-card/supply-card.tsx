@@ -4,11 +4,11 @@ import { FiChevronDown } from "react-icons/fi";
 import { useEffect, useMemo, useState } from "react";
 import { useAccount, useReadContract } from "wagmi";
 import { erc20Abi, formatUnits } from "viem";
-import { mockChains, mockTokens } from "@/data";
+import { mockChains } from "@/data";
 import { useWalletReady } from "@/lib/wallet-ready";
 import { useExpertStore, useMetaStore } from "@/stores";
 import { Selector } from "../selector";
-import { type YieldPeriod, TOKEN_LOGO_FALLBACKS, YIELD_PERIODS } from "./constants";
+import { type YieldPeriod, YIELD_PERIODS } from "./constants";
 import { formatUsd } from "./utils";
 
 export function SupplyCard() {
@@ -22,7 +22,8 @@ export function SupplyCard() {
   const setAmount = useExpertStore((state) => state.setAmount);
 
   const chainsById = useMetaStore((state) => state.chainsById);
-  const tokensBySymbol = useMetaStore((state) => state.tokensBySymbol);
+  const tokensByChain = useMetaStore((state) => state.tokensByChain);
+  const metaStatus = useMetaStore((state) => state.status);
   const loadMeta = useMetaStore((state) => state.loadMeta);
 
   useEffect(() => {
@@ -49,20 +50,41 @@ export function SupplyCard() {
   const estimatedForPeriod = estimatedYearly / activePeriod.divisor;
   const hintValue = estimatedYearly / activePeriod.hintDivisor;
 
+  const chainTokens = useMemo(() => {
+    const list = tokensByChain[chain.id];
+    if (!list || list.length === 0) return [];
+    const seen = new Set<string>();
+    return list.filter((t) => {
+      const key = t.symbol.toUpperCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [chain.id, tokensByChain]);
+
   const tokenOptions = useMemo(
     () =>
-      mockTokens.map((item) => {
-        const symbol = item.symbol.toUpperCase();
-        const metaLogo = tokensBySymbol[chain.id]?.[symbol]?.logoURI;
-        return {
-          key: item.symbol,
-          label: item.symbol,
-          hint: item.name,
-          iconUrl: metaLogo ?? TOKEN_LOGO_FALLBACKS[symbol],
-        };
-      }),
-    [chain.id, tokensBySymbol],
+      chainTokens.map((item) => ({
+        key: item.symbol,
+        label: item.symbol,
+        hint: item.name,
+        iconUrl: item.logoURI,
+      })),
+    [chainTokens],
   );
+
+  useEffect(() => {
+    if (chainTokens.length === 0) return;
+    const exists = chainTokens.some((t) => t.symbol === token.symbol);
+    if (!exists) {
+      const first = chainTokens[0];
+      setToken({
+        symbol: first.symbol,
+        name: first.name,
+        usdPrice: Number.parseFloat(first.priceUSD ?? "0") || 0,
+      });
+    }
+  }, [chainTokens, token.symbol, setToken]);
 
   const chainOptions = useMemo(
     () =>
@@ -83,8 +105,14 @@ export function SupplyCard() {
   }
 
   function handleTokenSelect(symbol: string) {
-    const next = mockTokens.find((item) => item.symbol === symbol);
-    if (next) setToken(next);
+    const meta = chainTokens.find((t) => t.symbol === symbol);
+    if (meta) {
+      setToken({
+        symbol: meta.symbol,
+        name: meta.name,
+        usdPrice: Number.parseFloat(meta.priceUSD ?? "0") || 0,
+      });
+    }
   }
 
   function handleChainSelect(id: string) {
@@ -128,6 +156,7 @@ export function SupplyCard() {
               options={tokenOptions}
               onSelect={handleTokenSelect}
               variant="pill"
+              emptyLabel={metaStatus === "ready" ? "No tokens" : "Loading…"}
             />
           </div>
           <div className="mt-2 flex items-center justify-between text-xs">

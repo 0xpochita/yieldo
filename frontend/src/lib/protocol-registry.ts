@@ -50,6 +50,96 @@ const PROTOCOL_REGISTRY: Record<string, ProtocolMetaEntry> = {
     logo: "",
     url: "https://fluid.instadapp.io",
   },
+  ethena: {
+    name: "Ethena",
+    logo: "/Assets/Images/Logo-DeFi/ethena-logo.jpg",
+    url: "https://app.ethena.fi",
+  },
+  "ethena-usde": {
+    name: "Ethena",
+    logo: "/Assets/Images/Logo-DeFi/ethena-logo.jpg",
+    url: "https://app.ethena.fi",
+  },
+  "ether-fi": {
+    name: "Ether.Fi",
+    logo: "/Assets/Images/Logo-DeFi/etherfi-logo.jpg",
+    url: "https://app.ether.fi",
+  },
+  "ether-fi-liquid": {
+    name: "Ether.fi Liquid",
+    logo: "/Assets/Images/Logo-DeFi/etherfi-logo.jpg",
+    url: "https://app.ether.fi",
+  },
+  "ether-fi-stake": {
+    name: "Ether.fi Stake",
+    logo: "/Assets/Images/Logo-DeFi/etherfi-logo.jpg",
+    url: "https://ether.fi/app/weeth",
+  },
+  pendle: {
+    name: "Pendle",
+    logo: "/Assets/Images/Logo-DeFi/pendle-logo.jpg",
+    url: "https://app.pendle.finance",
+  },
+  hypurrfi: {
+    name: "Hypurrfi",
+    logo: "/Assets/Images/Logo-DeFi/hypurrfi-logo.jpg",
+    url: "https://www.hypurrfi.xyz",
+  },
+  kelp: {
+    name: "Kelp",
+    logo: "/Assets/Images/Logo-DeFi/kelpdao-logo.jpg",
+    url: "https://kelpdao.xyz",
+  },
+  kinetiq: {
+    name: "Kinetiq",
+    logo: "/Assets/Images/Logo-DeFi/kinetiq-logo.jpg",
+    url: "https://app.kinetiq.xyz",
+  },
+  maple: {
+    name: "Maple",
+    logo: "/Assets/Images/Logo-DeFi/maple-finance-logo.jpg",
+    url: "https://app.maple.finance",
+  },
+  avon: {
+    name: "Avon",
+    logo: "/Assets/Images/Logo-DeFi/avon-logo.jpg",
+    url: "https://app.avon.finance",
+  },
+  concrete: {
+    name: "Concrete",
+    logo: "/Assets/Images/Logo-DeFi/concrete-logo.png",
+    url: "https://app.concrete.xyz",
+  },
+  felix: {
+    name: "Felix",
+    logo: "/Assets/Images/Logo-DeFi/felix-logo.jpg",
+    url: "https://felix.money",
+  },
+  hyperlend: {
+    name: "Hyperlend",
+    logo: "/Assets/Images/Logo-DeFi/hyperlend-logo.jpg",
+    url: "https://app.hyperlend.finance",
+  },
+  neverland: {
+    name: "Neverland",
+    logo: "/Assets/Images/Logo-DeFi/neverland-money-logo.jpg",
+    url: "https://app.neverland.finance",
+  },
+  auto: {
+    name: "Auto",
+    logo: "/Assets/Images/Logo-DeFi/autofarm-logo.png",
+    url: "https://autofarm.network",
+  },
+  upshift: {
+    name: "Upshift",
+    logo: "/Assets/Images/Logo-DeFi/upshift-logo.jpg",
+    url: "https://app.upshift.finance",
+  },
+  usdai: {
+    name: "USDai",
+    logo: "/Assets/Images/Logo-DeFi/usdai-logo.jpg",
+    url: "https://usdai.finance",
+  },
 };
 
 function titleCaseSlug(slug: string): string {
@@ -71,7 +161,7 @@ export type ResolvedProtocol = {
 };
 
 export function resolveProtocol(rawName: string | null | undefined): ResolvedProtocol {
-  const slug = (rawName ?? "").toLowerCase().trim();
+  const slug = (rawName ?? "").toLowerCase().trim().replace(/[\s.]+/g, "-");
   if (!slug) {
     return { slug: "", displayName: "Unknown", logoPath: null, protocolUrl: null };
   }
